@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% from "_shelf_grid.html" import shelf_table %}
+{% block title %}新規ラベル発行｜在庫管理{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm me-2">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h2 class="mb-0"><i class="bi bi-tag me-2 text-warning"></i>新規ラベル発行</h2>
+</div>
+
+{% if success %}
+<div class="result-card success-card">
+  <div class="result-icon"><i class="bi bi-check-circle-fill text-success"></i></div>
+  <h3 class="mt-3">機材登録完了</h3>
+  <div class="result-detail mt-3">
+    <div class="detail-row">
+      <span class="detail-label">管理ID</span>
+      <span class="detail-value fw-bold fs-5">{{ equipment.management_id }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">物品名</span>
+      <span class="detail-value">{{ equipment.item_name }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">ステータス</span>
+      <span class="detail-value">
+        <span class="badge {% if equipment.status == '保管中' %}bg-success{% else %}bg-warning text-dark{% endif %} fs-6">
+          {{ equipment.status }}
+        </span>
+      </span>
+    </div>
+    {% if equipment.storage_label %}
+    <div class="detail-row">
+      <span class="detail-label">保管場所</span>
+      <span class="detail-value shelf-badge">{{ equipment.storage_label }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- テプラCSVダウンロード -->
+  {% if csv_file %}
+  <div class="mt-3">
+    <a href="{{ url_for('serve_label', filename=csv_file) }}"
+       class="btn btn-outline-primary" download>
+      <i class="bi bi-filetype-csv me-2"></i>テプラ用CSV ダウンロード
+    </a>
+    <p class="text-muted small mt-1">
+      テプラPROソフトウェアで .lw1 テンプレートを開き、このCSVを差し込み印刷してください。
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="mt-4 d-flex gap-3 justify-content-center">
+    <a href="{{ url_for('new_label') }}" class="btn btn-warning btn-lg px-5">続けて発行</a>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-5">ホームへ</a>
+  </div>
+</div>
+
+{% else %}
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<form method="post" id="newLabelForm">
+  <div class="scan-card">
+
+    <!-- カテゴリ選択 -->
+    <div class="scan-step">
+      <div class="step-badge bg-warning text-dark">1</div>
+      <div class="scan-content">
+        <label class="scan-label">カテゴリ</label>
+        <div class="category-grid">
+          {% for cat in categories %}
+          <label class="category-cell">
+            <input type="radio" name="category_id" value="{{ cat.id }}"
+                   {% if request.form.get('category_id') == cat.id|string %}checked{% endif %}
+                   required>
+            <span class="category-label">
+              <span class="cat-prefix">{{ cat.prefix }}</span>
+              <span class="cat-name">{{ cat.name }}</span>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+        <!-- 管理ID プレビュー -->
+        <div id="idPreview" class="id-preview d-none mt-2">
+          発行予定ID: <strong id="idPreviewValue"></strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-divider"><i class="bi bi-chevron-down"></i></div>
+
+    <!-- 物品名 -->
+    <div class="scan-step">
+      <div class="step-badge bg-warning text-dark">2</div>
+      <div class="scan-content">
+        <label class="scan-label" for="item_name">物品名</label>
+        <input type="text" id="item_name" name="item_name"
+               class="form-control form-control-lg"
+               placeholder="例: Canon EOS R6 Mark II"
+               value="{{ request.form.get('item_name', '') }}"
+               required>
+      </div>
+    </div>
+
+    <div class="step-divider"><i class="bi bi-chevron-down"></i></div>
+
+    <!-- ステータス -->
+    <div class="scan-step">
+      <div class="step-badge bg-warning text-dark">3</div>
+      <div class="scan-content">
+        <label class="scan-label">ステータス</label>
+        <div class="d-flex gap-3">
+          <label class="status-cell">
+            <input type="radio" name="status" value="保管中"
+                   {% if request.form.get('status', '保管中') == '保管中' %}checked{% endif %}
+                   id="statusStorage">
+            <span class="status-label status-storage">
+              <i class="bi bi-archive me-1"></i>保管中
+            </span>
+          </label>
+          <label class="status-cell">
+            <input type="radio" name="status" value="使用中"
+                   {% if request.form.get('status') == '使用中' %}checked{% endif %}
+                   id="statusInUse">
+            <span class="status-label status-inuse">
+              <i class="bi bi-person me-1"></i>使用中
+            </span>
+          </label>
+        </div>
+
+        <!-- 保管中の場合: 棚または場所を選択 -->
+        <div id="storageArea" class="mt-3">
+          <label class="form-label fw-semibold">保管場所</label>
+          <ul class="nav nav-tabs location-tabs mb-3" id="nlLocationTab">
+            <li class="nav-item">
+              <button class="nav-link {% if not request.form.get('place_id') %}active{% endif %}"
+                      type="button" data-bs-toggle="tab" data-bs-target="#nl-tab-shelf"
+                      id="nlTabShelfBtn">
+                <i class="bi bi-grid me-1"></i>棚
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link {% if request.form.get('place_id') %}active{% endif %}"
+                      type="button" data-bs-toggle="tab" data-bs-target="#nl-tab-place"
+                      id="nlTabPlaceBtn">
+                <i class="bi bi-geo-alt me-1"></i>場所
+              </button>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane fade {% if not request.form.get('place_id') %}show active{% endif %}"
+                 id="nl-tab-shelf">
+              {{ shelf_table(row_labels, col_nums, shelf_grid, request.form.get('shelf_id', '')) }}
+            </div>
+            <div class="tab-pane fade {% if request.form.get('place_id') %}show active{% endif %}"
+                 id="nl-tab-place">
+              {% if places %}
+              <div class="place-grid">
+                {% for place in places %}
+                <label class="place-cell">
+                  <input type="radio" name="place_id" value="{{ place.id }}"
+                         {% if request.form.get('place_id') == place.id|string %}checked{% endif %}>
+                  <span class="place-label">
+                    <i class="bi bi-geo-alt me-1"></i>{{ place.name }}
+                  </span>
+                </label>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="text-muted small">場所が登録されていません。<a href="{{ url_for('admin') }}">管理画面</a>から追加してください。</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- 使用中の場合: 使用者入力 -->
+        <div id="inUseArea" class="mt-3 d-none">
+          <label class="form-label fw-semibold">使用者情報</label>
+          <input type="text" id="student_id" name="student_id"
+                 class="form-control mb-2"
+                 placeholder="学生ID"
+                 value="{{ request.form.get('student_id', '') }}">
+          <input type="text" id="student_name" name="student_name"
+                 class="form-control"
+                 placeholder="氏名（任意）"
+                 value="{{ request.form.get('student_name', '') }}">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="confirm-area">
+    <button type="submit" class="btn btn-warning btn-confirm text-dark">
+      <i class="bi bi-tag me-2"></i>登録・ラベル発行
+    </button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/new_label.js') }}"></script>
+{% endblock %}

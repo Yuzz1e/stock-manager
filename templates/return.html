@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% from "_shelf_grid.html" import shelf_table %}
+{% set html5qrcode = true %}
+{% block title %}保管・返却｜在庫管理{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm me-2">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h2 class="mb-0"><i class="bi bi-box-arrow-in-down-left me-2 text-success"></i>保管・返却</h2>
+</div>
+
+{% if success %}
+<div class="result-card success-card">
+  <div class="result-icon"><i class="bi bi-check-circle-fill text-success"></i></div>
+  <h3 class="mt-3">返却・保管登録完了</h3>
+  <div class="result-detail mt-3">
+    <div class="detail-row">
+      <span class="detail-label">機材</span>
+      <span class="detail-value">{{ equipment.management_id }} — {{ equipment.item_name }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">保管場所</span>
+      <span class="detail-value shelf-badge">{{ location_label }}</span>
+    </div>
+  </div>
+  <div class="mt-4 d-flex gap-3 justify-content-center">
+    <a href="{{ url_for('return_item') }}" class="btn btn-success btn-lg px-5">続けて登録</a>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-5">ホームへ</a>
+  </div>
+</div>
+
+{% else %}
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<form method="post" id="returnForm">
+  <div class="scan-card">
+    <!-- 機材バーコード -->
+    <div class="scan-step">
+      <div class="step-badge bg-success">1</div>
+      <div class="scan-content">
+        <label class="scan-label">機材バーコード <span class="badge bg-warning text-dark ms-1">QR / バーコード</span></label>
+        <div class="input-group input-group-lg">
+          <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+          <input type="text" id="management_id" name="management_id"
+                 class="form-control scan-input"
+                 placeholder="バーコードをスキャンまたは入力"
+                 value="{{ request.form.get('management_id', '') }}"
+                 autocomplete="off" required autofocus>
+          <button type="button" class="btn btn-outline-secondary" onclick="clearField('management_id')">
+            <i class="bi bi-x-lg"></i>
+          </button>
+          <button type="button" class="btn btn-outline-primary" id="cameraBtn"
+                  data-target="management_id" title="カメラでスキャン">
+            <i class="bi bi-camera"></i>
+          </button>
+        </div>
+
+        <div id="cameraArea" class="camera-area d-none mt-2">
+          <div id="reader"></div>
+          <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="stopCameraBtn">
+            <i class="bi bi-stop-circle me-1"></i>カメラ停止
+          </button>
+        </div>
+
+        <div id="equipmentPreview" class="equipment-preview d-none mt-3"></div>
+      </div>
+    </div>
+
+    <div class="step-divider"><i class="bi bi-chevron-down"></i></div>
+
+    <!-- 保管場所選択 -->
+    <div class="scan-step">
+      <div class="step-badge bg-success">2</div>
+      <div class="scan-content">
+        <label class="scan-label">保管場所</label>
+
+        <!-- タブ切り替え -->
+        <ul class="nav nav-tabs location-tabs mb-3" id="locationTab">
+          <li class="nav-item">
+            <button class="nav-link {% if not request.form.get('place_id') %}active{% endif %}"
+                    type="button" data-bs-toggle="tab" data-bs-target="#tab-shelf"
+                    id="tabShelfBtn">
+              <i class="bi bi-grid me-1"></i>棚
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link {% if request.form.get('place_id') %}active{% endif %}"
+                    type="button" data-bs-toggle="tab" data-bs-target="#tab-place"
+                    id="tabPlaceBtn">
+              <i class="bi bi-geo-alt me-1"></i>場所
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- 棚グリッド -->
+          <div class="tab-pane fade {% if not request.form.get('place_id') %}show active{% endif %}"
+               id="tab-shelf">
+            {{ shelf_table(row_labels, col_nums, shelf_grid, request.form.get('shelf_id', '')) }}
+          </div>
+
+          <!-- 場所一覧 -->
+          <div class="tab-pane fade {% if request.form.get('place_id') %}show active{% endif %}"
+               id="tab-place">
+            {% if places %}
+            <div class="place-grid">
+              {% for place in places %}
+              <label class="place-cell">
+                <input type="radio" name="place_id" value="{{ place.id }}"
+                       {% if request.form.get('place_id') == place.id|string %}checked{% endif %}>
+                <span class="place-label">
+                  <i class="bi bi-geo-alt me-1"></i>{{ place.name }}
+                </span>
+              </label>
+              {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted small">場所が登録されていません。<a href="{{ url_for('admin') }}">管理画面</a>から追加してください。</p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="confirm-area">
+    <button type="submit" class="btn btn-success btn-confirm" id="confirmBtn">
+      <i class="bi bi-check-lg me-2"></i>確認・登録
+    </button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+<script src="{{ url_for('static', filename='js/return.js') }}"></script>
+<script>
+// タブ切り替え時に不要な選択をクリア
+document.getElementById('tabShelfBtn')?.addEventListener('click', () => {
+  document.querySelectorAll('input[name="place_id"]').forEach(r => r.checked = false);
+});
+document.getElementById('tabPlaceBtn')?.addEventListener('click', () => {
+  document.querySelectorAll('input[name="shelf_id"]').forEach(r => r.checked = false);
+});
+</script>
+{% endblock %}

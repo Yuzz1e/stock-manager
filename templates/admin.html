@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block title %}管理画面｜在庫管理{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm me-2">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h2 class="mb-0"><i class="bi bi-gear me-2"></i>管理画面</h2>
+</div>
+
+<!-- タブ -->
+<ul class="nav nav-tabs mb-3" id="adminTabs">
+  <li class="nav-item">
+    <a class="nav-link active" data-bs-toggle="tab" href="#tab-loans">
+      <i class="bi bi-person-check me-1"></i>貸出中 ({{ active_loans|length }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#tab-equipment">
+      <i class="bi bi-box me-1"></i>機材一覧 ({{ equipment_list|length }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#tab-places">
+      <i class="bi bi-geo-alt me-1"></i>場所 ({{ places|length }})
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#tab-master">
+      <i class="bi bi-list-ul me-1"></i>マスタ設定
+    </a>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <!-- 貸出中一覧 -->
+  <div class="tab-pane fade show active" id="tab-loans">
+    {% if active_loans %}
+    <div class="table-responsive">
+      <table class="table table-hover admin-table">
+        <thead class="table-light">
+          <tr>
+            <th>管理ID</th><th>物品名</th><th>学生ID</th><th>氏名</th><th>貸出日時</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loan in active_loans %}
+          <tr>
+            <td><span class="badge bg-secondary">{{ loan.equipment.management_id }}</span></td>
+            <td>{{ loan.equipment.item_name }}</td>
+            <td>{{ loan.student_id }}</td>
+            <td>{{ loan.student_name or '—' }}</td>
+            <td class="text-muted small">
+              {{ loan.checked_out_at.strftime('%Y/%m/%d %H:%M') if loan.checked_out_at else '—' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted">貸出中の機材はありません。</p>
+    {% endif %}
+  </div>
+
+  <!-- 機材一覧 -->
+  <div class="tab-pane fade" id="tab-equipment">
+    <div class="table-responsive">
+      <table class="table table-hover admin-table">
+        <thead class="table-light">
+          <tr>
+            <th>管理ID</th><th>カテゴリ</th><th>物品名</th><th>ステータス</th><th>場所 / 使用者</th><th>登録日</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for eq in equipment_list %}
+          <tr>
+            <td><span class="badge bg-secondary">{{ eq.management_id }}</span></td>
+            <td>{{ eq.category.name }}</td>
+            <td>{{ eq.item_name }}</td>
+            <td>
+              <span class="badge {% if eq.status == '保管中' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                {{ eq.status }}
+              </span>
+            </td>
+            <td>
+              {% if eq.status == '保管中' %}
+                {% if eq.storage_label %}<span class="shelf-badge small">{{ eq.storage_label }}</span>{% else %}—{% endif %}
+              {% else %}
+                {% set loan = eq.current_loan %}
+                {{ loan.student_name or loan.student_id if loan else '—' }}
+              {% endif %}
+            </td>
+            <td class="text-muted small">
+              {{ eq.created_at.strftime('%Y/%m/%d') if eq.created_at else '—' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 場所管理 -->
+  <div class="tab-pane fade" id="tab-places">
+    <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+      <div class="input-group" style="max-width:340px">
+        <input type="text" id="newPlaceName" class="form-control" placeholder="場所名（例: レンタルラボ）">
+        <button class="btn btn-primary" onclick="addPlace()">
+          <i class="bi bi-plus me-1"></i>追加
+        </button>
+      </div>
+    </div>
+    {% if places %}
+    <div class="place-grid">
+      {% for place in places %}
+      <div class="place-manage-cell">
+        <i class="bi bi-geo-alt me-1 text-success"></i>{{ place.name }}
+        <button class="btn btn-sm btn-outline-danger ms-2"
+                onclick="deletePlace({{ place.id }}, '{{ place.name }}')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">場所が登録されていません。</p>
+    {% endif %}
+  </div>
+
+  <!-- マスタ設定 -->
+  <div class="tab-pane fade" id="tab-master">
+    <div class="row g-4">
+      <!-- カテゴリ -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header fw-semibold">
+            <i class="bi bi-tags me-1"></i>カテゴリ管理
+          </div>
+          <div class="card-body">
+            <table class="table table-sm">
+              <thead><tr><th>名前</th><th>プレフィックス</th><th>次の番号</th></tr></thead>
+              <tbody>
+                {% for cat in categories %}
+                <tr>
+                  <td>{{ cat.name }}</td>
+                  <td><code>{{ cat.prefix }}</code></td>
+                  <td>{{ cat.next_number }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <button class="btn btn-outline-primary btn-sm mt-2" onclick="showAddCategory()">
+              <i class="bi bi-plus me-1"></i>カテゴリ追加
+            </button>
+            <div id="addCategoryForm" class="mt-3 d-none">
+              <div class="input-group mb-2">
+                <input type="text" id="newCatName" class="form-control" placeholder="名前（例: カメラ）">
+                <input type="text" id="newCatPrefix" class="form-control" placeholder="プレフィックス（例: CAM）" maxlength="10">
+                <button class="btn btn-primary" onclick="addCategory()">追加</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 棚マスタ -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header fw-semibold">
+            <i class="bi bi-grid me-1"></i>棚マスタ
+          </div>
+          <div class="card-body">
+            <div class="shelf-grid-preview">
+              {% for shelf in shelves %}
+              <div class="shelf-preview-cell">{{ shelf.label }}</div>
+              {% endfor %}
+            </div>
+            <button class="btn btn-outline-primary btn-sm mt-2" onclick="showAddShelf()">
+              <i class="bi bi-plus me-1"></i>棚追加
+            </button>
+            <div id="addShelfForm" class="mt-3 d-none">
+              <div class="input-group mb-2">
+                <input type="number" id="newShelfRow" class="form-control" placeholder="行 (1=A)" min="1">
+                <input type="number" id="newShelfCol" class="form-control" placeholder="列" min="1">
+                <input type="text" id="newShelfLabel" class="form-control" placeholder="ラベル（例: A-1）">
+                <button class="btn btn-primary" onclick="addShelf()">追加</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showAddCategory() {
+  document.getElementById('addCategoryForm').classList.toggle('d-none');
+}
+async function addPlace() {
+  const name = document.getElementById('newPlaceName').value.trim();
+  if (!name) { alert('場所名を入力してください'); return; }
+  const res = await fetch('/api/places', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name})
+  });
+  const data = await res.json();
+  if (res.ok) { location.reload(); } else { alert(data.error || '追加に失敗しました'); }
+}
+
+async function deletePlace(id, name) {
+  if (!confirm(`「${name}」を削除してよいですか？`)) return;
+  const res = await fetch(`/api/places/${id}`, {method: 'DELETE'});
+  if (res.ok) { location.reload(); } else { alert('削除に失敗しました'); }
+}
+
+async function addCategory() {
+  const name = document.getElementById('newCatName').value.trim();
+  const prefix = document.getElementById('newCatPrefix').value.trim();
+  if (!name || !prefix) { alert('名前とプレフィックスを入力してください'); return; }
+  const res = await fetch('/api/categories', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name, prefix})
+  });
+  const data = await res.json();
+  if (res.ok) { location.reload(); } else { alert(data.error || '追加に失敗しました'); }
+}
+
+function showAddShelf() {
+  document.getElementById('addShelfForm').classList.toggle('d-none');
+}
+async function addShelf() {
+  const row_num = parseInt(document.getElementById('newShelfRow').value);
+  const col_num = parseInt(document.getElementById('newShelfCol').value);
+  const label = document.getElementById('newShelfLabel').value.trim();
+  if (!row_num || !col_num || !label) { alert('すべての項目を入力してください'); return; }
+  const res = await fetch('/api/shelves', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({row_num, col_num, label})
+  });
+  const data = await res.json();
+  if (res.ok) { location.reload(); } else { alert(data.error || '追加に失敗しました'); }
+}
+</script>
+{% endblock %}

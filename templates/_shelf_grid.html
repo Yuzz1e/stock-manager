@@ -1,0 +1,41 @@
+{#
+  Excel風棚グリッド マクロ
+  列ヘッダー: 英字 (A, B, C, ...)  ← row_labels
+  行ヘッダー: 数字 (1, 2, 3, ...)  ← col_nums
+  セル: shelf_grid[row_label][col_num]
+#}
+{% macro shelf_table(row_labels, col_nums, shelf_grid, selected='') %}
+<div class="shelf-table-wrapper">
+  <table class="shelf-table">
+    <thead>
+      <tr>
+        <th class="shelf-corner"></th>
+        {% for row_label in row_labels %}
+        <th class="shelf-col-header">{{ row_label }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for col in col_nums %}
+      <tr>
+        <th class="shelf-row-header">{{ col }}</th>
+        {% for row_label in row_labels %}
+          {% set shelf = shelf_grid[row_label].get(col) %}
+          <td class="shelf-td">
+            {% if shelf %}
+            <label class="shelf-cell">
+              <input type="radio" name="shelf_id" value="{{ shelf.id }}"
+                     {% if selected == shelf.id|string %}checked{% endif %}>
+              <span class="shelf-td-label">{{ shelf.label }}</span>
+            </label>
+            {% else %}
+            <span class="shelf-td-empty">—</span>
+            {% endif %}
+          </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}

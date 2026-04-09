@@ -1,0 +1,567 @@
+/* ─── 基本 ──────────────────────────────────────────────── */
+:root {
+  --color-checkout: #0d6efd;
+  --color-return:   #198754;
+  --color-label:    #ffc107;
+  --radius-card:    16px;
+  --shadow-card:    0 4px 20px rgba(0,0,0,.10);
+}
+
+body {
+  font-size: 1rem;
+  background: #f4f6f9;
+}
+
+/* ─── ナビゲーション ───────────────────────────────────── */
+.navbar {
+  min-height: 56px;
+}
+
+/* ─── ページヘッダー ───────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+.page-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* ─── ホーム画面 ───────────────────────────────────────── */
+.home-wrapper {
+  min-height: calc(100vh - 80px);
+  padding: 2rem 1rem;
+}
+.home-title {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+}
+.home-btn-group {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 700px;
+}
+
+/* 大きなアクションボタン */
+.home-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: clamp(220px, 40vw, 300px);
+  height: clamp(160px, 25vh, 200px);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+  color: #fff;
+  font-weight: 700;
+  transition: transform .15s, box-shadow .15s;
+}
+.home-btn:hover, .home-btn:focus {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.18);
+  color: #fff;
+}
+.home-btn:active {
+  transform: translateY(0);
+}
+.home-btn i {
+  font-size: clamp(2rem, 6vw, 3rem);
+}
+.home-btn span {
+  font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+  letter-spacing: .05em;
+}
+.home-btn small {
+  font-size: 0.8rem;
+  font-weight: 400;
+  opacity: .85;
+}
+
+.btn-checkout { background: linear-gradient(135deg, #0d6efd, #0a58ca); }
+.btn-return   { background: linear-gradient(135deg, #198754, #146c43); }
+
+/* 小さめの新規ラベルボタン */
+.home-btn-sub {
+  display: inline-flex;
+  align-items: center;
+  padding: .85rem 2.5rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  color: #212529;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: transform .15s, box-shadow .15s;
+}
+.home-btn-sub:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.15);
+  color: #212529;
+}
+
+/* ─── スキャンカード ────────────────────────────────────── */
+.scan-card {
+  background: #fff;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.scan-step {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.step-badge {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-checkout);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+.scan-content {
+  flex: 1;
+}
+.scan-label {
+  font-size: 1rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: .5rem;
+}
+.scan-input {
+  font-size: 1.1rem !important;
+}
+
+.step-divider {
+  text-align: center;
+  color: #adb5bd;
+  font-size: 1.4rem;
+  margin: .75rem 0;
+}
+
+/* ─── カメラプレビュー ──────────────────────────────────── */
+.camera-area {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+#reader {
+  width: 100% !important;
+}
+#reader video {
+  width: 100% !important;
+  border-radius: 0;
+}
+
+/* ─── 機材プレビューボックス ────────────────────────────── */
+.equipment-preview { }
+.preview-box {
+  background: #f0f7ff;
+  border: 1.5px solid #b8d8ff;
+  border-radius: 10px;
+  padding: .6rem 1rem;
+  font-size: .95rem;
+}
+.preview-error {
+  background: #fff3f3;
+  border-color: #ffb3b3;
+  color: #d63939;
+}
+
+/* ─── 棚グリッド ────────────────────────────────────────── */
+.shelf-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.shelf-cell {
+  cursor: pointer;
+}
+.shelf-cell input[type="radio"] {
+  display: none;
+}
+.shelf-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  border: 2px solid #dee2e6;
+  background: #f8f9fa;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all .12s;
+  cursor: pointer;
+  padding: 0 .5rem;
+}
+.shelf-cell input:checked + .shelf-label {
+  background: var(--color-return);
+  border-color: var(--color-return);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(25,135,84,.35);
+}
+.shelf-label:hover {
+  border-color: var(--color-return);
+  background: #e8f5ee;
+}
+
+/* ─── Excel風 棚グリッドテーブル ────────────────────────── */
+.shelf-table-wrapper {
+  overflow-x: auto;
+}
+.shelf-table {
+  border-collapse: separate;
+  border-spacing: 4px;
+  margin: 0;
+}
+.shelf-corner {
+  width: 36px;
+}
+.shelf-col-header {
+  text-align: center;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #495057;
+  background: #e9ecef;
+  border-radius: 6px;
+  min-width: 60px;
+  padding: 4px 8px;
+}
+.shelf-row-header {
+  text-align: center;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #495057;
+  background: #e9ecef;
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+.shelf-td {
+  padding: 0;
+}
+.shelf-td-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 52px;
+  color: #ced4da;
+  font-size: .85rem;
+}
+
+/* セル（ラジオ隠し） */
+.shelf-cell {
+  display: block;
+  cursor: pointer;
+  margin: 0;
+}
+.shelf-cell input[type="radio"] { display: none; }
+.shelf-td-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 52px;
+  border-radius: 8px;
+  border: 2px solid #dee2e6;
+  background: #f8f9fa;
+  font-weight: 600;
+  font-size: .95rem;
+  transition: all .12s;
+  cursor: pointer;
+}
+.shelf-cell input:checked + .shelf-td-label {
+  background: var(--color-return);
+  border-color: var(--color-return);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(25,135,84,.35);
+}
+.shelf-td-label:hover {
+  border-color: var(--color-return);
+  background: #e8f5ee;
+}
+
+/* 棚バッジ（インライン表示） */
+.shelf-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #198754;
+  color: #fff;
+  border-radius: 8px;
+  padding: .15rem .55rem;
+  font-weight: 700;
+  font-size: .9rem;
+}
+
+/* ─── 保管場所タブ ──────────────────────────────────────── */
+.location-tabs {
+  border-bottom: 2px solid #dee2e6;
+}
+.location-tabs .nav-link {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: .5rem 1.2rem;
+  border-radius: 8px 8px 0 0;
+}
+
+/* ─── 場所グリッド ──────────────────────────────────────── */
+.place-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+}
+.place-cell {
+  cursor: pointer;
+}
+.place-cell input[type="radio"] { display: none; }
+.place-label {
+  display: inline-flex;
+  align-items: center;
+  padding: .6rem 1.1rem;
+  border-radius: 10px;
+  border: 2px solid #dee2e6;
+  background: #f8f9fa;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all .12s;
+  color: #495057;
+}
+.place-cell input:checked + .place-label {
+  background: #198754;
+  border-color: #198754;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(25,135,84,.35);
+}
+.place-label:hover {
+  border-color: #198754;
+  background: #e8f5ee;
+}
+
+/* 管理画面の場所セル */
+.place-manage-cell {
+  display: inline-flex;
+  align-items: center;
+  padding: .5rem .9rem;
+  border-radius: 10px;
+  border: 1.5px solid #dee2e6;
+  background: #f8f9fa;
+  font-weight: 600;
+  font-size: .95rem;
+}
+
+/* ─── カテゴリグリッド ──────────────────────────────────── */
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.category-cell {
+  cursor: pointer;
+}
+.category-cell input[type="radio"] { display: none; }
+.category-label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  padding: .55rem .75rem;
+  border-radius: 10px;
+  border: 2px solid #dee2e6;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all .12s;
+}
+.cat-prefix {
+  font-weight: 700;
+  font-size: .9rem;
+  color: #495057;
+}
+.cat-name {
+  font-size: .75rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+.category-cell input:checked + .category-label {
+  background: var(--color-label);
+  border-color: #e0a800;
+  color: #212529;
+  box-shadow: 0 2px 8px rgba(255,193,7,.4);
+}
+.category-cell input:checked + .category-label .cat-prefix,
+.category-cell input:checked + .category-label .cat-name {
+  color: #212529;
+}
+.category-label:hover {
+  border-color: var(--color-label);
+  background: #fff8e1;
+}
+
+/* 発行予定IDプレビュー */
+.id-preview {
+  background: #fffbea;
+  border: 1.5px solid #ffd54f;
+  border-radius: 8px;
+  padding: .4rem .8rem;
+  font-size: .95rem;
+  color: #5a4a00;
+}
+.id-preview strong {
+  font-size: 1.1rem;
+  letter-spacing: .08em;
+}
+
+/* ─── ステータス選択 ────────────────────────────────────── */
+.status-cell { cursor: pointer; }
+.status-cell input[type="radio"] { display: none; }
+.status-label {
+  display: inline-flex;
+  align-items: center;
+  padding: .65rem 1.3rem;
+  border-radius: 10px;
+  border: 2px solid #dee2e6;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all .12s;
+}
+.status-storage { color: #198754; }
+.status-inuse   { color: #856404; }
+.status-cell input:checked + .status-storage {
+  background: #198754; color: #fff;
+  border-color: #198754;
+}
+.status-cell input:checked + .status-inuse {
+  background: #ffc107; color: #212529;
+  border-color: #e0a800;
+}
+
+/* ─── 確認ボタン ────────────────────────────────────────── */
+.confirm-area {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+.btn-confirm {
+  min-width: 240px;
+  height: 64px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  transition: transform .1s;
+}
+.btn-confirm:active { transform: scale(.97); }
+
+/* ─── 完了カード ────────────────────────────────────────── */
+.result-card {
+  background: #fff;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+.result-icon {
+  font-size: 4rem;
+  line-height: 1;
+}
+.result-detail {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  text-align: left;
+}
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .4rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-label {
+  min-width: 80px;
+  font-size: .85rem;
+  color: #6c757d;
+  font-weight: 600;
+}
+.detail-value {
+  font-size: 1rem;
+}
+
+/* ─── ラベルプレビュー ──────────────────────────────────── */
+.label-preview {
+  text-align: center;
+}
+.label-img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+
+/* ─── 管理画面 ──────────────────────────────────────────── */
+.admin-table th, .admin-table td {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.shelf-grid-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+.shelf-preview-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1.5px solid #dee2e6;
+  background: #f8f9fa;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+/* ─── レスポンシブ調整 ──────────────────────────────────── */
+@media (max-width: 576px) {
+  .scan-card { padding: 1rem; }
+  .home-btn-group { gap: 1rem; }
+  .home-btn {
+    width: calc(50% - .5rem);
+    min-width: 140px;
+    height: 150px;
+  }
+  .btn-confirm { min-width: 90%; height: 60px; }
+  .step-badge { width: 30px; height: 30px; font-size: .85rem; }
+}
+
+/* タッチデバイス: タップ対象を大きく */
+@media (pointer: coarse) {
+  .shelf-label { min-width: 60px; height: 60px; }
+  .category-label { min-width: 88px; padding: .65rem .9rem; }
+  .status-label { padding: .75rem 1.5rem; }
+  input.form-control { font-size: 1.1rem !important; min-height: 48px; }
+  .btn { min-height: 44px; }
+}
