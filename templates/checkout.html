@@ -1,5 +1,4 @@
-{% extends "base.html" %}
-{% set html5qrcode = true %}
+﻿{% extends "base.html" %}
 {% block title %}使用登録｜在庫管理{% endblock %}
 
 {% block content %}
@@ -39,17 +38,36 @@
 
 {% else %}
 <!-- 入力フォーム -->
-{% if error %}
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-  <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+<!-- インライン成功カード（JS から表示） -->
+<div id="checkoutSuccess" class="result-card success-card d-none">
+  <div class="result-icon"><i class="bi bi-check-circle-fill text-success"></i></div>
+  <h3 class="mt-3">貸出登録完了</h3>
+  <div class="result-detail mt-3" id="checkoutSuccessDetail"></div>
+  <div class="mt-4 d-flex gap-3 justify-content-center">
+    <button class="btn btn-primary btn-lg px-5" onclick="resetCheckout()">続けて登録</button>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-5">ホームへ</a>
+  </div>
 </div>
-{% endif %}
+
+<!-- スキャナー状態バー -->
+<div class="serial-bar mb-3">
+  <span class="serial-label"><i class="bi bi-broadcast me-1"></i>スキャナー</span>
+  <span class="ms-2 small">
+    <i class="bi bi-person-badge me-1 text-info"></i>NFC
+    <span id="nfcStatus" class="badge text-bg-secondary">---</span>
+  </span>
+  <span class="ms-3 small">
+    <i class="bi bi-upc-scan me-1 text-warning"></i>バーコード
+    <span id="barcodeStatus" class="badge text-bg-secondary">---</span>
+  </span>
+  <span id="sseStatus" class="badge text-bg-secondary ms-auto">接続待ち</span>
+</div>
 
 <form method="post" id="checkoutForm">
   <div class="scan-card">
-    <!-- 学生ID (NFC) -->
-    <div class="scan-step">
+    <!-- 学生証スキャン（フェーズ1） -->
+    <div class="scan-step" id="stepStudent">
       <div class="step-badge">1</div>
       <div class="scan-content">
         <label class="scan-label">学生ID <span class="badge bg-info ms-1">NFC / キーボード</span></label>
@@ -76,11 +94,11 @@
 
     <div class="step-divider"><i class="bi bi-chevron-down"></i></div>
 
-    <!-- 機材バーコード -->
-    <div class="scan-step">
+    <!-- 機材バーコード（フェーズ2） -->
+    <div class="scan-step" id="stepBarcode">
       <div class="step-badge">2</div>
       <div class="scan-content">
-        <label class="scan-label">機材バーコード <span class="badge bg-warning text-dark ms-1">QR / バーコード</span></label>
+        <label class="scan-label">機材バーコード <span class="badge bg-warning text-dark ms-1">バーコード</span></label>
         <div class="input-group input-group-lg">
           <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
           <input type="text" id="management_id" name="management_id"
@@ -90,18 +108,6 @@
                  autocomplete="off" required>
           <button type="button" class="btn btn-outline-secondary" onclick="clearField('management_id')">
             <i class="bi bi-x-lg"></i>
-          </button>
-          <button type="button" class="btn btn-outline-primary" id="cameraBtn"
-                  data-target="management_id" title="カメラでスキャン">
-            <i class="bi bi-camera"></i>
-          </button>
-        </div>
-
-        <!-- カメラプレビュー -->
-        <div id="cameraArea" class="camera-area d-none mt-2">
-          <div id="reader"></div>
-          <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="stopCameraBtn">
-            <i class="bi bi-stop-circle me-1"></i>カメラ停止
           </button>
         </div>
 
@@ -118,9 +124,57 @@
   </div>
 </form>
 {% endif %}
+
+<!-- エラーモーダル -->
+<div class="modal fade" id="checkoutErrorModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>エラー</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="errorModalMessage" class="mb-0"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 使用中モーダル（使用者変更ボタン付き） -->
+<div class="modal fade" id="inUseModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title"><i class="bi bi-person-exclamation me-2"></i>使用中の機材</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="inUseMessage" class="mb-3"></p>
+        <div class="alert alert-light border mb-0">
+          <div class="small text-muted mb-1">現在の使用者</div>
+          <div class="fw-bold" id="inUseBorrower"></div>
+        </div>
+      </div>
+      <div class="modal-footer flex-column align-items-stretch gap-2">
+        <button type="button" class="btn btn-danger w-100" id="forceCheckoutBtn">
+          <i class="bi bi-arrow-left-right me-2"></i>使用者を変更する
+        </button>
+        <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">
+          キャンセル
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
 <script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
 {% endblock %}
+
+

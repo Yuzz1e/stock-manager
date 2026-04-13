@@ -17,6 +17,11 @@
     </a>
   </li>
   <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#tab-history">
+      <i class="bi bi-clock-history me-1"></i>操作履歴 ({{ log_total }})
+    </a>
+  </li>
+  <li class="nav-item">
     <a class="nav-link" data-bs-toggle="tab" href="#tab-equipment">
       <i class="bi bi-box me-1"></i>機材一覧 ({{ equipment_list|length }})
     </a>
@@ -52,7 +57,7 @@
             <td>{{ loan.student_id }}</td>
             <td>{{ loan.student_name or '—' }}</td>
             <td class="text-muted small">
-              {{ loan.checked_out_at.strftime('%Y/%m/%d %H:%M') if loan.checked_out_at else '—' }}
+              {{ loan.checked_out_at | jst }}
             </td>
           </tr>
           {% endfor %}
@@ -64,21 +69,134 @@
     {% endif %}
   </div>
 
+  <!-- 操作履歴 -->
+  <div class="tab-pane fade" id="tab-history">
+    <!-- スキャナー状態バー -->
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <small class="text-muted">スキャナー:</small>
+      <span id="logNfcStatus" class="badge text-bg-secondary">NFC 未接続</span>
+      <span id="logBarcodeStatus" class="badge text-bg-secondary">バーコード 未接続</span>
+      <span id="logScanHint" class="text-muted small ms-1">
+        <i class="bi bi-info-circle me-1"></i>学生証をかざすか、機材QRを読み取ると自動で絞り込みます
+      </span>
+      <span id="logScanToast" class="badge text-bg-primary ms-auto d-none"></span>
+    </div>
+
+    <!-- 検索・フィルタバー -->
+    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+      <div class="input-group" style="max-width:300px">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" id="logSearchInput" class="form-control" placeholder="管理ID・物品名・学生ID…">
+        <button class="btn btn-outline-secondary" type="button" id="logSearchClear" style="display:none" onclick="clearLogSearch()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <select id="logActionFilter" class="form-select" style="max-width:160px">
+        <option value="">すべての操作</option>
+        <option value="checkout">使用開始</option>
+        <option value="return">返却</option>
+        <option value="register">新規登録</option>
+      </select>
+      <button class="btn btn-outline-secondary btn-sm" onclick="searchLogs()">
+        <i class="bi bi-funnel me-1"></i>絞り込み
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="resetLogs()">
+        <i class="bi bi-x-circle me-1"></i>リセット
+      </button>
+      <span id="logCount" class="text-muted small ms-auto"></span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover admin-table" id="logTable">
+        <thead class="table-light">
+          <tr>
+            <th style="width:150px">日時</th>
+            <th style="width:90px">操作</th>
+            <th>管理ID</th>
+            <th>物品名</th>
+            <th>学生ID</th>
+            <th>氏名</th>
+            <th>詳細</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody">
+          {% for log in activity_logs %}
+          <tr>
+            <td class="text-muted small">
+              {{ log.timestamp | jst }}
+            </td>
+            <td>
+              {% if log.action == 'checkout' %}
+                <span class="badge bg-warning text-dark">使用開始</span>
+              {% elif log.action == 'return' %}
+                <span class="badge bg-success">返却</span>
+              {% elif log.action == 'register' %}
+                <span class="badge bg-primary">新規登録</span>
+              {% elif log.action == 'force_return' %}
+                <span class="badge bg-danger">強制返却</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ log.action }}</span>
+              {% endif %}
+            </td>
+            <td><span class="badge bg-secondary">{{ log.management_id or '—' }}</span></td>
+            <td>{{ log.item_name or '—' }}</td>
+            <td>{{ log.student_id or '—' }}</td>
+            <td>{{ log.student_name or '—' }}</td>
+            <td class="text-muted small">{{ log.details or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-muted text-center py-4">操作履歴がありません。</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div id="logLoadMore" class="text-center mt-2 d-none">
+      <button class="btn btn-outline-secondary btn-sm" onclick="loadMoreLogs()">
+        <i class="bi bi-chevron-down me-1"></i>さらに読み込む
+      </button>
+    </div>
+  </div>
+
   <!-- 機材一覧 -->
   <div class="tab-pane fade" id="tab-equipment">
+    <!-- 検索バー -->
+    <div class="d-flex gap-2 mb-3 align-items-center flex-wrap">
+      <div class="input-group" style="max-width:320px">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" id="eqSearchInput" class="form-control"
+               placeholder="管理ID・物品名・用品番号…">
+        <button class="btn btn-outline-secondary" type="button" id="eqSearchClear"
+                style="display:none" onclick="clearEqSearch()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm" onclick="searchEquipment()">
+        <i class="bi bi-funnel me-1"></i>絞り込み
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="resetEquipment()">
+        <i class="bi bi-x-circle me-1"></i>リセット
+      </button>
+      <span id="eqCount" class="text-muted small ms-auto"></span>
+    </div>
+
     <div class="table-responsive">
       <table class="table table-hover admin-table">
         <thead class="table-light">
           <tr>
-            <th>管理ID</th><th>カテゴリ</th><th>物品名</th><th>ステータス</th><th>場所 / 使用者</th><th>登録日</th>
+            <th>管理ID</th><th>カテゴリ</th><th>物品名</th><th>用品ラベル</th><th>ステータス</th><th>場所 / 使用者</th><th>登録日</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="eqTableBody">
           {% for eq in equipment_list %}
           <tr>
             <td><span class="badge bg-secondary">{{ eq.management_id }}</span></td>
             <td>{{ eq.category.name }}</td>
             <td>{{ eq.item_name }}</td>
+            <td>
+              {% if eq.supply_label %}
+                <span class="badge bg-danger">{{ eq.supply_label }}</span>
+              {% else %}—{% endif %}
+            </td>
             <td>
               <span class="badge {% if eq.status == '保管中' %}bg-success{% else %}bg-warning text-dark{% endif %}">
                 {{ eq.status }}
@@ -93,7 +211,7 @@
               {% endif %}
             </td>
             <td class="text-muted small">
-              {{ eq.created_at.strftime('%Y/%m/%d') if eq.created_at else '—' }}
+              {{ eq.created_at | jst('%Y/%m/%d') }}
             </td>
           </tr>
           {% endfor %}
@@ -140,13 +258,19 @@
           </div>
           <div class="card-body">
             <table class="table table-sm">
-              <thead><tr><th>名前</th><th>プレフィックス</th><th>次の番号</th></tr></thead>
+              <thead><tr><th>名前</th><th>プレフィックス</th><th>次の番号</th><th></th></tr></thead>
               <tbody>
                 {% for cat in categories %}
                 <tr>
                   <td>{{ cat.name }}</td>
                   <td><code>{{ cat.prefix }}</code></td>
                   <td>{{ cat.next_number }}</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="deleteCategory({{ cat.id }}, '{{ cat.name }}')">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -174,7 +298,15 @@
           <div class="card-body">
             <div class="shelf-grid-preview">
               {% for shelf in shelves %}
-              <div class="shelf-preview-cell">{{ shelf.label }}</div>
+              <div class="shelf-preview-cell d-flex align-items-center gap-1 p-1">
+                <span class="flex-grow-1">{{ shelf.label }}</span>
+                <button class="btn btn-xs btn-outline-danger p-0 px-1 lh-1"
+                        style="font-size:.7rem"
+                        onclick="deleteShelf({{ shelf.id }}, '{{ shelf.label }}')"
+                        title="削除">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
               {% endfor %}
             </div>
             <button class="btn btn-outline-primary btn-sm mt-2" onclick="showAddShelf()">
@@ -198,6 +330,226 @@
 
 {% block scripts %}
 <script>
+/* ── スキャナー SSE 連携（履歴タブ用） ─────────────── */
+(function () {
+  let evtSource = null;
+  let toastTimer = null;
+
+  function isHistoryTabActive() {
+    return document.getElementById('tab-history')?.classList.contains('active');
+  }
+
+  function showScanToast(msg) {
+    const el = document.getElementById('logScanToast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.add('d-none'), 3000);
+  }
+
+  function updateReaderStatus(data) {
+    const nfc = document.getElementById('logNfcStatus');
+    const bc  = document.getElementById('logBarcodeStatus');
+    if (nfc) {
+      nfc.textContent = data.nfc_connected ? 'NFC 接続中' : 'NFC 未接続';
+      nfc.className   = data.nfc_connected ? 'badge text-bg-success' : 'badge text-bg-secondary';
+    }
+    if (bc) {
+      bc.textContent = data.serial_connected ? 'バーコード 接続中' : 'バーコード 未接続';
+      bc.className   = data.serial_connected ? 'badge text-bg-success' : 'badge text-bg-secondary';
+    }
+  }
+
+  function applyLogScan(value, hint) {
+    const input = document.getElementById('logSearchInput');
+    if (!input) return;
+    input.value = value;
+    document.getElementById('logSearchClear').style.display = '';
+    showScanToast(hint);
+    searchLogs();
+  }
+
+  function connect() {
+    if (evtSource) evtSource.close();
+    evtSource = new EventSource('/api/scan-events');
+
+    evtSource.addEventListener('reader_status', e => {
+      updateReaderStatus(JSON.parse(e.data));
+    });
+
+    evtSource.addEventListener('student_scan', e => {
+      if (!isHistoryTabActive()) return;
+      const d = JSON.parse(e.data);
+      const sid = d.student_id || '';
+      applyLogScan(sid, `学生証: ${d.student_name ? d.student_name + ' (' + sid + ')' : sid}`);
+    });
+
+    evtSource.addEventListener('barcode_scan', e => {
+      if (!isHistoryTabActive()) return;
+      const d = JSON.parse(e.data);
+      const mid = d.management_id || '';
+      if (mid === '==INFOLAB_STOCK_MANAGEMENT_QR==') return;
+      applyLogScan(mid, `機材スキャン: ${mid}`);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    connect();
+    window.addEventListener('beforeunload', () => evtSource?.close());
+
+    /* 入力があればクリアボタン表示 */
+    document.getElementById('logSearchInput')?.addEventListener('input', function () {
+      document.getElementById('logSearchClear').style.display = this.value ? '' : 'none';
+    });
+  });
+})();
+
+function clearLogSearch() {
+  const input = document.getElementById('logSearchInput');
+  if (input) input.value = '';
+  document.getElementById('logSearchClear').style.display = 'none';
+  searchLogs();
+}
+
+/* ── 操作履歴 ─────────────────────────────────────── */
+let _logOffset = 0;
+const _logPageSize = 200;
+let _logTotal = {{ log_total }};
+let _logCurrentQ = '';
+let _logCurrentAction = '';
+
+function _actionBadge(action) {
+  const map = {
+    checkout:     ['bg-warning text-dark', '使用開始'],
+    return:       ['bg-success',           '返却'],
+    register:     ['bg-primary',           '新規登録'],
+    force_return: ['bg-danger',            '強制返却'],
+  };
+  const [cls, label] = map[action] || ['bg-secondary', action];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function _formatTs(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function _renderRows(logs) {
+  return logs.map(l => `<tr>
+    <td class="text-muted small">${_formatTs(l.timestamp)}</td>
+    <td>${_actionBadge(l.action)}</td>
+    <td><span class="badge bg-secondary">${l.management_id || '—'}</span></td>
+    <td>${l.item_name || '—'}</td>
+    <td>${l.student_id || '—'}</td>
+    <td>${l.student_name || '—'}</td>
+    <td class="text-muted small">${l.details || '—'}</td>
+  </tr>`).join('');
+}
+
+async function _fetchLogs(q, action, offset) {
+  const params = new URLSearchParams({ limit: _logPageSize, offset });
+  if (q)      params.set('q', q);
+  if (action) params.set('action', action);
+  const res = await fetch('/api/activity-logs?' + params);
+  return res.json();
+}
+
+async function searchLogs() {
+  _logCurrentQ      = document.getElementById('logSearchInput').value.trim();
+  _logCurrentAction = document.getElementById('logActionFilter').value;
+  _logOffset = 0;
+  const data = await _fetchLogs(_logCurrentQ, _logCurrentAction, 0);
+  _logTotal = data.total;
+  document.getElementById('logTableBody').innerHTML = data.logs.length
+    ? _renderRows(data.logs)
+    : '<tr><td colspan="7" class="text-muted text-center py-4">該当する履歴がありません。</td></tr>';
+  _logOffset = data.logs.length;
+  document.getElementById('logCount').textContent = `${_logTotal} 件`;
+  document.getElementById('logLoadMore').classList.toggle('d-none', _logOffset >= _logTotal);
+}
+
+async function loadMoreLogs() {
+  const data = await _fetchLogs(_logCurrentQ, _logCurrentAction, _logOffset);
+  document.getElementById('logTableBody').insertAdjacentHTML('beforeend', _renderRows(data.logs));
+  _logOffset += data.logs.length;
+  document.getElementById('logLoadMore').classList.toggle('d-none', _logOffset >= _logTotal);
+}
+
+function resetLogs() {
+  document.getElementById('logSearchInput').value = '';
+  document.getElementById('logActionFilter').value = '';
+  _logCurrentQ = '';
+  _logCurrentAction = '';
+  location.reload();
+}
+
+document.getElementById('logSearchInput')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchLogs();
+});
+
+/* 初期カウント表示 */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('logCount').textContent = `${_logTotal} 件`;
+  document.getElementById('logLoadMore').classList.toggle('d-none', {{ activity_logs|length }} >= _logTotal);
+});
+
+/* ── 機材一覧検索 ─────────────────────────────────── */
+function _formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`;
+}
+
+function _statusBadge(status) {
+  const cls = status === '保管中' ? 'bg-success' : 'bg-warning text-dark';
+  return `<span class="badge ${cls}">${status}</span>`;
+}
+
+async function searchEquipment() {
+  const q = document.getElementById('eqSearchInput').value.trim();
+  document.getElementById('eqSearchClear').style.display = q ? '' : 'none';
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  const res  = await fetch('/api/equipment?' + params);
+  const list = await res.json();
+  document.getElementById('eqCount').textContent = `${list.length} 件`;
+  document.getElementById('eqTableBody').innerHTML = list.length ? list.map(eq => `<tr>
+    <td><span class="badge bg-secondary">${eq.management_id}</span></td>
+    <td>${eq.category_name || '—'}</td>
+    <td>${eq.item_name}</td>
+    <td>${eq.supply_label ? `<span class="badge bg-danger">${eq.supply_label}</span>` : '—'}</td>
+    <td>${_statusBadge(eq.status)}</td>
+    <td>${eq.status === '保管中'
+          ? (eq.storage_label ? `<span class="shelf-badge small">${eq.storage_label}</span>` : '—')
+          : (eq.current_borrower || eq.student_id || '—')}</td>
+    <td class="text-muted small">${_formatDate(eq.created_at)}</td>
+  </tr>`).join('') : '<tr><td colspan="7" class="text-muted text-center py-4">該当する機材がありません。</td></tr>';
+}
+
+function clearEqSearch() {
+  document.getElementById('eqSearchInput').value = '';
+  document.getElementById('eqSearchClear').style.display = 'none';
+  searchEquipment();
+}
+
+function resetEquipment() {
+  document.getElementById('eqSearchInput').value = '';
+  document.getElementById('eqSearchClear').style.display = 'none';
+  location.reload();
+}
+
+document.getElementById('eqSearchInput')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchEquipment();
+});
+document.getElementById('eqSearchInput')?.addEventListener('input', function () {
+  document.getElementById('eqSearchClear').style.display = this.value ? '' : 'none';
+});
+
+/* ── マスタ設定 ───────────────────────────────────── */
 function showAddCategory() {
   document.getElementById('addCategoryForm').classList.toggle('d-none');
 }
@@ -247,6 +599,20 @@ async function addShelf() {
   });
   const data = await res.json();
   if (res.ok) { location.reload(); } else { alert(data.error || '追加に失敗しました'); }
+}
+
+async function deleteShelf(id, label) {
+  if (!confirm('棚「' + label + '」を削除してよいですか？')) return;
+  const res = await fetch('/api/shelves/' + id, {method: 'DELETE'});
+  const data = await res.json();
+  if (res.ok) { location.reload(); } else { alert(data.error || '削除に失敗しました'); }
+}
+
+async function deleteCategory(id, name) {
+  if (!confirm('カテゴリ「' + name + '」を削除してよいですか？')) return;
+  const res = await fetch('/api/categories/' + id, {method: 'DELETE'});
+  const data = await res.json();
+  if (res.ok) { location.reload(); } else { alert(data.error || '削除に失敗しました'); }
 }
 </script>
 {% endblock %}

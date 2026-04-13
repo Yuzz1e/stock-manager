@@ -1,6 +1,5 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% from "_shelf_grid.html" import shelf_table %}
-{% set html5qrcode = true %}
 {% block title %}保管・返却｜在庫管理{% endblock %}
 
 {% block content %}
@@ -39,13 +38,28 @@
 </div>
 {% endif %}
 
+
+<!-- スキャナー状態バー -->
+<div class="serial-bar mb-3">
+  <span class="serial-label"><i class="bi bi-broadcast me-1"></i>スキャナー</span>
+  <span class="ms-2 small">
+    <i class="bi bi-person-badge me-1 text-info"></i>NFC
+    <span id="nfcStatus" class="badge text-bg-secondary">---</span>
+  </span>
+  <span class="ms-3 small">
+    <i class="bi bi-upc-scan me-1 text-warning"></i>バーコード
+    <span id="barcodeStatus" class="badge text-bg-secondary">---</span>
+  </span>
+  <span id="sseStatus" class="badge text-bg-secondary ms-auto">接続待ち</span>
+</div>
+
 <form method="post" id="returnForm">
   <div class="scan-card">
     <!-- 機材バーコード -->
-    <div class="scan-step">
+    <div class="scan-step" id="stepBarcode">
       <div class="step-badge bg-success">1</div>
       <div class="scan-content">
-        <label class="scan-label">機材バーコード <span class="badge bg-warning text-dark ms-1">QR / バーコード</span></label>
+        <label class="scan-label">機材バーコード <span class="badge bg-warning text-dark ms-1">バーコード</span></label>
         <div class="input-group input-group-lg">
           <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
           <input type="text" id="management_id" name="management_id"
@@ -55,17 +69,6 @@
                  autocomplete="off" required autofocus>
           <button type="button" class="btn btn-outline-secondary" onclick="clearField('management_id')">
             <i class="bi bi-x-lg"></i>
-          </button>
-          <button type="button" class="btn btn-outline-primary" id="cameraBtn"
-                  data-target="management_id" title="カメラでスキャン">
-            <i class="bi bi-camera"></i>
-          </button>
-        </div>
-
-        <div id="cameraArea" class="camera-area d-none mt-2">
-          <div id="reader"></div>
-          <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="stopCameraBtn">
-            <i class="bi bi-stop-circle me-1"></i>カメラ停止
           </button>
         </div>
 
@@ -143,13 +146,5 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
 <script src="{{ url_for('static', filename='js/return.js') }}"></script>
-<script>
-// タブ切り替え時に不要な選択をクリア
-document.getElementById('tabShelfBtn')?.addEventListener('click', () => {
-  document.querySelectorAll('input[name="place_id"]').forEach(r => r.checked = false);
-});
-document.getElementById('tabPlaceBtn')?.addEventListener('click', () => {
-  document.querySelectorAll('input[name="shelf_id"]').forEach(r => r.checked = false);
-});
-</script>
 {% endblock %}
+

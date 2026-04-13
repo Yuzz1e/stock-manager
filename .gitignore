@@ -1,0 +1,7 @@
+.venv/
+.env
+labels/
+logs/
+stock.db
+__pycache__/
+old/

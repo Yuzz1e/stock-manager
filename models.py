@@ -1,5 +1,14 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from flask_sqlalchemy import SQLAlchemy
+
+
+def _utc_iso(dt):
+    """naive/aware UTC datetime を +00:00 付き ISO 文字列に変換する"""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.isoformat()
 
 db = SQLAlchemy()
 
@@ -56,6 +65,8 @@ class Equipment(db.Model):
     storage_row = db.Column(db.Integer, nullable=True)
     storage_col = db.Column(db.Integer, nullable=True)
     place_id = db.Column(db.Integer, db.ForeignKey("places.id"), nullable=True)
+    supply_year = db.Column(db.String(10),  nullable=True)
+    supply_code = db.Column(db.String(50),  nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(
         db.DateTime,
@@ -67,6 +78,15 @@ class Equipment(db.Model):
     category = db.relationship("Category", back_populates="equipment")
     place = db.relationship("Place", back_populates="equipment")
     loans = db.relationship("Loan", back_populates="equipment", lazy="dynamic")
+
+    @property
+    def supply_label(self):
+        """用品ラベルの表示文字列（例: 2022年度　H0196）"""
+        if self.supply_year and self.supply_code:
+            return f"{self.supply_year}年度　{self.supply_code}"
+        if self.supply_code:
+            return self.supply_code
+        return None
 
     @property
     def storage_label(self):
@@ -95,6 +115,10 @@ class Equipment(db.Model):
             "category_name": self.category.name if self.category else None,
             "current_borrower": loan.student_name if loan else None,
             "student_id": loan.student_id if loan else None,
+            "supply_year": self.supply_year,
+            "supply_code": self.supply_code,
+            "supply_label": self.supply_label,
+            "created_at": _utc_iso(self.created_at),
         }
 
     def __repr__(self):
@@ -122,10 +146,52 @@ class Loan(db.Model):
             "item_name": self.equipment.item_name if self.equipment else None,
             "student_id": self.student_id,
             "student_name": self.student_name,
-            "checked_out_at": self.checked_out_at.isoformat() if self.checked_out_at else None,
-            "returned_at": self.returned_at.isoformat() if self.returned_at else None,
+            "checked_out_at": _utc_iso(self.checked_out_at),
+            "returned_at": _utc_iso(self.returned_at),
             "return_location": self.return_location,
         }
 
     def __repr__(self):
         return f"<Loan {self.id}: {self.student_id} -> {self.equipment_id}>"
+
+
+class ActivityLog(db.Model):
+    """すべての操作履歴を記録するログテーブル"""
+    __tablename__ = "activity_logs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        index=True,
+    )
+    action = db.Column(db.String(30), nullable=False, index=True)
+    management_id = db.Column(db.String(20), nullable=True, index=True)
+    item_name = db.Column(db.String(200), nullable=True)
+    student_id = db.Column(db.String(50), nullable=True, index=True)
+    student_name = db.Column(db.String(100), nullable=True)
+    details = db.Column(db.String(300), nullable=True)
+
+    ACTION_LABELS = {
+        "checkout":     "使用開始",
+        "return":       "返却",
+        "register":     "新規登録",
+        "force_return": "強制返却",
+    }
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "timestamp": _utc_iso(self.timestamp),
+            "action": self.action,
+            "action_label": self.ACTION_LABELS.get(self.action, self.action),
+            "management_id": self.management_id,
+            "item_name": self.item_name,
+            "student_id": self.student_id,
+            "student_name": self.student_name,
+            "details": self.details,
+        }
+
+    def __repr__(self):
+        return f"<ActivityLog {self.id}: {self.action} {self.management_id}>"

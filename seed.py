@@ -24,10 +24,10 @@ def seed():
                 db.session.add(Category(name=cat_data["name"], prefix=cat_data["prefix"]))
                 print(f"  カテゴリ追加: {cat_data['name']} ({cat_data['prefix']})")
 
-        # 棚マスタ（5列 × 4行）
-        # 行: A, B, C, D / 列: 1〜5
-        rows = 4
-        cols = 5
+        # 棚マスタ（6列 × 6行）
+        # 行: A, B, C, D, E, F / 列: 1〜6
+        rows = 6
+        cols = 6
         for row in range(1, rows + 1):
             for col in range(1, cols + 1):
                 label = f"{chr(64 + row)}-{col}"

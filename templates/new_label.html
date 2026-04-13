@@ -37,18 +37,37 @@
       <span class="detail-value shelf-badge">{{ equipment.storage_label }}</span>
     </div>
     {% endif %}
+    {% if equipment.supply_label %}
+    <div class="detail-row">
+      <span class="detail-label">用品ラベル</span>
+      <span class="detail-value">
+        <span class="badge bg-danger">{{ equipment.supply_label }}</span>
+      </span>
+    </div>
+    {% endif %}
   </div>
 
-  <!-- テプラCSVダウンロード -->
+  <!-- 印刷ステータス -->
   {% if csv_file %}
   <div class="mt-3">
+    {% if print_ok %}
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-2">
+      <i class="bi bi-printer-fill fs-5"></i>
+      <span>テプラに印刷コマンドを送信しました。</span>
+    </div>
+    {% elif print_error %}
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <div>
+        <div class="fw-semibold">自動印刷できませんでした</div>
+        <div class="small">{{ print_error }}</div>
+      </div>
+    </div>
+    {% endif %}
     <a href="{{ url_for('serve_label', filename=csv_file) }}"
-       class="btn btn-outline-primary" download>
-      <i class="bi bi-filetype-csv me-2"></i>テプラ用CSV ダウンロード
+       class="btn btn-outline-primary btn-sm" download>
+      <i class="bi bi-filetype-csv me-1"></i>テプラ用CSV をダウンロード
     </a>
-    <p class="text-muted small mt-1">
-      テプラPROソフトウェアで .lw1 テンプレートを開き、このCSVを差し込み印刷してください。
-    </p>
   </div>
   {% endif %}
 
@@ -111,9 +130,62 @@
 
     <div class="step-divider"><i class="bi bi-chevron-down"></i></div>
 
-    <!-- ステータス -->
+    <!-- 用品ラベル（任意） -->
     <div class="scan-step">
       <div class="step-badge bg-warning text-dark">3</div>
+      <div class="scan-content">
+        <label class="scan-label">
+          用品ラベル
+          <span class="badge bg-secondary ms-2" style="font-size:.7rem">任意</span>
+        </label>
+        <!-- 赤ラベルのイメージ -->
+        <div class="supply-label-preview mb-3">
+          <div class="supply-label-card">
+            <div class="supply-line supply-line--title">用品ラベル（管理期間５年）</div>
+            <div class="supply-line">研究部</div>
+            <div class="supply-line supply-line--highlight">
+              <span id="supplyYearPreview">____</span>年度　<span id="supplyCodePreview">_____</span>
+            </div>
+            <div class="supply-line">学校法人　立命館</div>
+          </div>
+        </div>
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="hasSupplyLabel" name="has_supply_label">
+          <label class="form-check-label fw-semibold" for="hasSupplyLabel">
+            この機材には用品ラベルがある
+          </label>
+        </div>
+        <div id="supplyLabelFields" class="d-none">
+          <div class="row g-2">
+            <div class="col-auto">
+              <label class="form-label small text-muted">年度</label>
+              <div class="input-group">
+                <input type="number" id="supply_year" name="supply_year"
+                       class="form-control"
+                       placeholder="例: 2022"
+                       min="2000" max="2099"
+                       value="{{ request.form.get('supply_year', '') }}"
+                       style="width:110px">
+                <span class="input-group-text">年度</span>
+              </div>
+            </div>
+            <div class="col">
+              <label class="form-label small text-muted">整理番号</label>
+              <input type="text" id="supply_code" name="supply_code"
+                     class="form-control"
+                     placeholder="例: H0196"
+                     value="{{ request.form.get('supply_code', '') }}">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-divider"><i class="bi bi-chevron-down"></i></div>
+
+    <!-- ステータス -->
+    <div class="scan-step">
+      <div class="step-badge bg-warning text-dark">4</div>
       <div class="scan-content">
         <label class="scan-label">ステータス</label>
         <div class="d-flex gap-3">
@@ -182,10 +254,22 @@
 
         <!-- 使用中の場合: 使用者入力 -->
         <div id="inUseArea" class="mt-3 d-none">
-          <label class="form-label fw-semibold">使用者情報</label>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <label class="form-label fw-semibold mb-0">使用者情報</label>
+            <span id="nfcStatusBadge" class="badge text-bg-secondary ms-auto" style="font-size:.75rem">
+              <i class="bi bi-wifi-off me-1"></i>NFC 未接続
+            </span>
+          </div>
+
+          <!-- NFC スキャン促進バナー -->
+          <div id="nfcScanPrompt" class="alert alert-info d-flex align-items-center gap-2 py-2 mb-2">
+            <i class="bi bi-credit-card-2-front fs-5 text-primary"></i>
+            <span class="small">学生証をNFCリーダーにかざすと自動入力されます</span>
+          </div>
+
           <input type="text" id="student_id" name="student_id"
                  class="form-control mb-2"
-                 placeholder="学生ID"
+                 placeholder="学生ID（NFCまたは手入力）"
                  value="{{ request.form.get('student_id', '') }}">
           <input type="text" id="student_name" name="student_name"
                  class="form-control"

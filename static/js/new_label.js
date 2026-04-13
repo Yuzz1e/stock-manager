@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const categoryRadios = document.querySelectorAll('input[name="category_id"]');
   const idPreview = document.getElementById('idPreview');
   const idPreviewValue = document.getElementById('idPreviewValue');
+  const studentIdInput   = document.getElementById('student_id');
+  const studentNameInput = document.getElementById('student_name');
+  const nfcStatusBadge   = document.getElementById('nfcStatusBadge');
+  const nfcScanPrompt    = document.getElementById('nfcScanPrompt');
 
   // ステータス切り替え
   function updateStatusArea() {
@@ -52,4 +56,85 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('nlTabPlaceBtn')?.addEventListener('click', () => {
     document.querySelectorAll('input[name="shelf_id"]').forEach(r => r.checked = false);
   });
+
+  // 用品ラベル: トグル表示
+  const hasSupplyLabel   = document.getElementById('hasSupplyLabel');
+  const supplyLabelFields = document.getElementById('supplyLabelFields');
+  const supplyYearInput  = document.getElementById('supply_year');
+  const supplyCodeInput  = document.getElementById('supply_code');
+  const supplyYearPrev   = document.getElementById('supplyYearPreview');
+  const supplyCodePrev   = document.getElementById('supplyCodePreview');
+
+  function updateSupplyPreview() {
+    if (supplyYearPrev) supplyYearPrev.textContent = supplyYearInput?.value.trim() || '____';
+    if (supplyCodePrev) supplyCodePrev.textContent = supplyCodeInput?.value.trim() || '_____';
+  }
+
+  hasSupplyLabel?.addEventListener('change', () => {
+    supplyLabelFields?.classList.toggle('d-none', !hasSupplyLabel.checked);
+    if (!hasSupplyLabel.checked) {
+      if (supplyYearInput) supplyYearInput.value = '';
+      if (supplyCodeInput) supplyCodeInput.value = '';
+      updateSupplyPreview();
+    }
+  });
+
+  supplyYearInput?.addEventListener('input', updateSupplyPreview);
+  supplyCodeInput?.addEventListener('input', updateSupplyPreview);
+
+  // フォーム復元時の状態反映
+  if (supplyCodeInput?.value || supplyYearInput?.value) {
+    if (hasSupplyLabel) hasSupplyLabel.checked = true;
+    supplyLabelFields?.classList.remove('d-none');
+    updateSupplyPreview();
+  }
+
+  // --- NFC ステータスバッジ更新 ---
+  function updateNfcStatus(connected) {
+    if (!nfcStatusBadge) return;
+    if (connected) {
+      nfcStatusBadge.className = 'badge text-bg-success ms-auto';
+      nfcStatusBadge.innerHTML = '<i class="bi bi-wifi me-1"></i>NFC 接続中';
+    } else {
+      nfcStatusBadge.className = 'badge text-bg-secondary ms-auto';
+      nfcStatusBadge.innerHTML = '<i class="bi bi-wifi-off me-1"></i>NFC 未接続';
+    }
+  }
+
+  // --- NFC 読み取り成功フラッシュ ---
+  function flashNfcSuccess() {
+    if (!nfcScanPrompt) return;
+    nfcScanPrompt.className = 'alert alert-success d-flex align-items-center gap-2 py-2 mb-2';
+    nfcScanPrompt.innerHTML = '<i class="bi bi-check-circle-fill fs-5 text-success"></i><span class="small">学生証を読み取りました</span>';
+    setTimeout(() => {
+      nfcScanPrompt.className = 'alert alert-info d-flex align-items-center gap-2 py-2 mb-2';
+      nfcScanPrompt.innerHTML = '<i class="bi bi-credit-card-2-front fs-5 text-primary"></i><span class="small">学生証をNFCリーダーにかざすと自動入力されます</span>';
+    }, 3000);
+  }
+
+  // --- SSE 接続（NFC スキャンイベント受信）---
+  let evtSource = null;
+
+  function connectSSE() {
+    if (evtSource) evtSource.close();
+    evtSource = new EventSource('/api/scan-events');
+
+    evtSource.addEventListener('student_scan', (e) => {
+      const data = JSON.parse(e.data);
+      // 「使用中」選択中のときだけ自動入力する
+      const isInUse = document.querySelector('input[name="status"]:checked')?.value === '使用中';
+      if (!isInUse) return;
+      if (studentIdInput)   studentIdInput.value   = data.student_id   || '';
+      if (studentNameInput) studentNameInput.value = data.student_name || '';
+      flashNfcSuccess();
+    });
+
+    evtSource.addEventListener('reader_status', (e) => {
+      const data = JSON.parse(e.data);
+      updateNfcStatus(!!data.nfc_connected);
+    });
+  }
+
+  connectSSE();
+  window.addEventListener('beforeunload', () => evtSource?.close());
 });

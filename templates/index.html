@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}ホーム｜在庫管理{% endblock %}
 
 {% block content %}
@@ -28,4 +28,21 @@
     <i class="bi bi-tag me-2"></i>新規ラベル発行
   </a>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // 管理用QRコードをシリアルスキャンした場合は管理画面へ遷移
+  (function () {
+    const es = new EventSource('/api/scan-events');
+    es.addEventListener('barcode_scan', (e) => {
+      const data = JSON.parse(e.data);
+      if ((data.management_id || '') === '==INFOLAB_STOCK_MANAGEMENT_QR==') {
+        es.close();
+        window.location.href = '/admin';
+      }
+    });
+    window.addEventListener('beforeunload', () => es.close());
+  })();
+</script>
 {% endblock %}
