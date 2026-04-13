@@ -35,16 +35,18 @@ set CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe
 set EDGE_PATH=C:\Program Files\Microsoft\Edge\Application\msedge.exe
 set EDGE_PATH32=C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
 
+set ZOOM=--force-device-scale-factor=1.25
+
 if exist "%CHROME_PATH%" (
-    start "" "%CHROME_PATH%" --kiosk %URL%
+    start "" "%CHROME_PATH%" --kiosk %URL% %ZOOM%
     goto END
 )
 if exist "%EDGE_PATH%" (
-    start "" "%EDGE_PATH%" --kiosk %URL% --edge-kiosk-type=fullscreen
+    start "" "%EDGE_PATH%" --kiosk %URL% --edge-kiosk-type=fullscreen %ZOOM%
     goto END
 )
 if exist "%EDGE_PATH32%" (
-    start "" "%EDGE_PATH32%" --kiosk %URL% --edge-kiosk-type=fullscreen
+    start "" "%EDGE_PATH32%" --kiosk %URL% --edge-kiosk-type=fullscreen %ZOOM%
     goto END
 )
 :: フォールバック: デフォルトブラウザで開く（全画面なし）
