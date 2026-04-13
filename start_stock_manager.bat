@@ -8,6 +8,13 @@ set URL=http://localhost:%PORT%
 
 cd /d "%APP_DIR%"
 
+:: 最新コードを取得（自動デプロイ）
+echo [%DATE% %TIME%] git pull 実行中...
+git pull origin main
+if %errorlevel% neq 0 (
+    echo [%DATE% %TIME%] git pull に失敗しましたが、起動を続行します。
+)
+
 :: Flask サーバーをバックグラウンドで起動（最小化・.venv の python を直接指定）
 start "StockManager-Flask" /min "%PYTHON%" app.py
 
