@@ -1,45 +1,45 @@
 {% extends "base.html" %}
 {% from "_shelf_grid.html" import shelf_table %}
-{% block title %}新規ラベル発行｜在庫管理{% endblock %}
+{% block title %}{{ _('新規ラベル発行｜在庫管理') }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm me-2">
     <i class="bi bi-arrow-left"></i>
   </a>
-  <h2 class="mb-0"><i class="bi bi-tag me-2 text-warning"></i>新規ラベル発行</h2>
+  <h2 class="mb-0"><i class="bi bi-tag me-2 text-warning"></i>{{ _('新規ラベル発行') }}</h2>
 </div>
 
 {% if success %}
 <div class="result-card success-card">
   <div class="result-icon"><i class="bi bi-check-circle-fill text-success"></i></div>
-  <h3 class="mt-3">機材登録完了</h3>
+  <h3 class="mt-3">{{ _('機材登録完了') }}</h3>
   <div class="result-detail mt-3">
     <div class="detail-row">
-      <span class="detail-label">管理ID</span>
+      <span class="detail-label">{{ _('管理ID') }}</span>
       <span class="detail-value fw-bold fs-5">{{ equipment.management_id }}</span>
     </div>
     <div class="detail-row">
-      <span class="detail-label">物品名</span>
+      <span class="detail-label">{{ _('物品名') }}</span>
       <span class="detail-value">{{ equipment.item_name }}</span>
     </div>
     <div class="detail-row">
-      <span class="detail-label">ステータス</span>
+      <span class="detail-label">{{ _('ステータス') }}</span>
       <span class="detail-value">
         <span class="badge {% if equipment.status == '保管中' %}bg-success{% else %}bg-warning text-dark{% endif %} fs-6">
-          {{ equipment.status }}
+          {{ _(equipment.status) }}
         </span>
       </span>
     </div>
     {% if equipment.storage_label %}
     <div class="detail-row">
-      <span class="detail-label">保管場所</span>
+      <span class="detail-label">{{ _('保管場所') }}</span>
       <span class="detail-value shelf-badge">{{ equipment.storage_label }}</span>
     </div>
     {% endif %}
     {% if equipment.supply_label %}
     <div class="detail-row">
-      <span class="detail-label">用品ラベル</span>
+      <span class="detail-label">{{ _('用品ラベル') }}</span>
       <span class="detail-value">
         <span class="badge bg-danger">{{ equipment.supply_label }}</span>
       </span>
@@ -53,27 +53,27 @@
     {% if print_ok %}
     <div class="alert alert-success d-flex align-items-center gap-2 mb-2">
       <i class="bi bi-printer-fill fs-5"></i>
-      <span>テプラに印刷コマンドを送信しました。</span>
+      <span>{{ _('テプラに印刷コマンドを送信しました。') }}</span>
     </div>
     {% elif print_error %}
     <div class="alert alert-warning d-flex align-items-center gap-2 mb-2">
       <i class="bi bi-exclamation-triangle-fill fs-5"></i>
       <div>
-        <div class="fw-semibold">自動印刷できませんでした</div>
+        <div class="fw-semibold">{{ _('自動印刷できませんでした') }}</div>
         <div class="small">{{ print_error }}</div>
       </div>
     </div>
     {% endif %}
     <a href="{{ url_for('serve_label', filename=csv_file) }}"
        class="btn btn-outline-primary btn-sm" download>
-      <i class="bi bi-filetype-csv me-1"></i>テプラ用CSV をダウンロード
+      <i class="bi bi-filetype-csv me-1"></i>{{ _('テプラ用CSV をダウンロード') }}
     </a>
   </div>
   {% endif %}
 
   <div class="mt-4 d-flex gap-3 justify-content-center">
-    <a href="{{ url_for('new_label') }}" class="btn btn-warning btn-lg px-5">続けて発行</a>
-    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-5">ホームへ</a>
+    <a href="{{ url_for('new_label') }}" class="btn btn-warning btn-lg px-5">{{ _('続けて発行') }}</a>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-5">{{ _('ホームへ') }}</a>
   </div>
 </div>
 
@@ -92,7 +92,7 @@
     <div class="scan-step">
       <div class="step-badge bg-warning text-dark">1</div>
       <div class="scan-content">
-        <label class="scan-label">カテゴリ</label>
+        <label class="scan-label">{{ _('カテゴリ') }}</label>
         <div class="category-grid">
           {% for cat in categories %}
           <label class="category-cell">
@@ -108,7 +108,7 @@
         </div>
         <!-- 管理ID プレビュー -->
         <div id="idPreview" class="id-preview d-none mt-2">
-          発行予定ID: <strong id="idPreviewValue"></strong>
+          {{ _('発行予定ID:') }} <strong id="idPreviewValue"></strong>
         </div>
       </div>
     </div>
@@ -119,10 +119,10 @@
     <div class="scan-step">
       <div class="step-badge bg-warning text-dark">2</div>
       <div class="scan-content">
-        <label class="scan-label" for="item_name">物品名</label>
+        <label class="scan-label" for="item_name">{{ _('物品名') }}</label>
         <input type="text" id="item_name" name="item_name"
                class="form-control form-control-lg"
-               placeholder="例: Canon EOS R6 Mark II"
+               placeholder="{{ _('例: Canon EOS R6 Mark II') }}"
                value="{{ request.form.get('item_name', '') }}"
                required>
       </div>
@@ -135,45 +135,45 @@
       <div class="step-badge bg-warning text-dark">3</div>
       <div class="scan-content">
         <label class="scan-label">
-          用品ラベル
-          <span class="badge bg-secondary ms-2" style="font-size:.7rem">任意</span>
+          {{ _('用品ラベル') }}
+          <span class="badge bg-secondary ms-2" style="font-size:.7rem">{{ _('任意') }}</span>
         </label>
         <!-- 赤ラベルのイメージ -->
         <div class="supply-label-preview mb-3">
           <div class="supply-label-card">
-            <div class="supply-line supply-line--title">用品ラベル（管理期間５年）</div>
-            <div class="supply-line">研究部</div>
+            <div class="supply-line supply-line--title">{{ _('用品ラベル（管理期間５年）') }}</div>
+            <div class="supply-line">{{ _('研究部') }}</div>
             <div class="supply-line supply-line--highlight">
-              <span id="supplyYearPreview">____</span>年度　<span id="supplyCodePreview">_____</span>
+              <span id="supplyYearPreview">____</span>{{ _('年度') }}　<span id="supplyCodePreview">_____</span>
             </div>
-            <div class="supply-line">学校法人　立命館</div>
+            <div class="supply-line">{{ _('学校法人　立命館') }}</div>
           </div>
         </div>
         <div class="form-check form-switch mb-3">
           <input class="form-check-input" type="checkbox" id="hasSupplyLabel" name="has_supply_label">
           <label class="form-check-label fw-semibold" for="hasSupplyLabel">
-            この機材には用品ラベルがある
+            {{ _('この機材には用品ラベルがある') }}
           </label>
         </div>
         <div id="supplyLabelFields" class="d-none">
           <div class="row g-2">
             <div class="col-auto">
-              <label class="form-label small text-muted">年度</label>
+              <label class="form-label small text-muted">{{ _('年度') }}</label>
               <div class="input-group">
                 <input type="number" id="supply_year" name="supply_year"
                        class="form-control"
-                       placeholder="例: 2022"
+                       placeholder="{{ _('例: 2022') }}"
                        min="2000" max="2099"
                        value="{{ request.form.get('supply_year', '') }}"
                        style="width:110px">
-                <span class="input-group-text">年度</span>
+                <span class="input-group-text">{{ _('年度') }}</span>
               </div>
             </div>
             <div class="col">
-              <label class="form-label small text-muted">整理番号</label>
+              <label class="form-label small text-muted">{{ _('整理番号') }}</label>
               <input type="text" id="supply_code" name="supply_code"
                      class="form-control"
-                     placeholder="例: H0196"
+                     placeholder="{{ _('例: H0196') }}"
                      value="{{ request.form.get('supply_code', '') }}">
             </div>
           </div>
@@ -187,14 +187,14 @@
     <div class="scan-step">
       <div class="step-badge bg-warning text-dark">4</div>
       <div class="scan-content">
-        <label class="scan-label">ステータス</label>
+        <label class="scan-label">{{ _('ステータス') }}</label>
         <div class="d-flex gap-3">
           <label class="status-cell">
             <input type="radio" name="status" value="保管中"
                    {% if request.form.get('status', '保管中') == '保管中' %}checked{% endif %}
                    id="statusStorage">
             <span class="status-label status-storage">
-              <i class="bi bi-archive me-1"></i>保管中
+              <i class="bi bi-archive me-1"></i>{{ _('保管中') }}
             </span>
           </label>
           <label class="status-cell">
@@ -202,27 +202,27 @@
                    {% if request.form.get('status') == '使用中' %}checked{% endif %}
                    id="statusInUse">
             <span class="status-label status-inuse">
-              <i class="bi bi-person me-1"></i>使用中
+              <i class="bi bi-person me-1"></i>{{ _('使用中') }}
             </span>
           </label>
         </div>
 
         <!-- 保管中の場合: 棚または場所を選択 -->
         <div id="storageArea" class="mt-3">
-          <label class="form-label fw-semibold">保管場所</label>
+          <label class="form-label fw-semibold">{{ _('保管場所') }}</label>
           <ul class="nav nav-tabs location-tabs mb-3" id="nlLocationTab">
             <li class="nav-item">
               <button class="nav-link {% if not request.form.get('place_id') %}active{% endif %}"
                       type="button" data-bs-toggle="tab" data-bs-target="#nl-tab-shelf"
                       id="nlTabShelfBtn">
-                <i class="bi bi-grid me-1"></i>棚
+                <i class="bi bi-grid me-1"></i>{{ _('棚') }}
               </button>
             </li>
             <li class="nav-item">
               <button class="nav-link {% if request.form.get('place_id') %}active{% endif %}"
                       type="button" data-bs-toggle="tab" data-bs-target="#nl-tab-place"
                       id="nlTabPlaceBtn">
-                <i class="bi bi-geo-alt me-1"></i>場所
+                <i class="bi bi-geo-alt me-1"></i>{{ _('場所') }}
               </button>
             </li>
           </ul>
@@ -246,7 +246,10 @@
                 {% endfor %}
               </div>
               {% else %}
-              <p class="text-muted small">場所が登録されていません。<a href="{{ url_for('admin') }}">管理画面</a>から追加してください。</p>
+              <p class="text-muted small">
+                {% set admin_link %}<a href="{{ url_for('admin') }}">{{ _('管理画面') }}</a>{% endset %}
+                {{ _('場所が登録されていません。%(link)sから追加してください。', link=admin_link) | safe }}
+              </p>
               {% endif %}
             </div>
           </div>
@@ -255,25 +258,25 @@
         <!-- 使用中の場合: 使用者入力 -->
         <div id="inUseArea" class="mt-3 d-none">
           <div class="d-flex align-items-center gap-2 mb-2">
-            <label class="form-label fw-semibold mb-0">使用者情報</label>
+            <label class="form-label fw-semibold mb-0">{{ _('使用者情報') }}</label>
             <span id="nfcStatusBadge" class="badge text-bg-secondary ms-auto" style="font-size:.75rem">
-              <i class="bi bi-wifi-off me-1"></i>NFC 未接続
+              <i class="bi bi-wifi-off me-1"></i>{{ _('NFC 未接続') }}
             </span>
           </div>
 
           <!-- NFC スキャン促進バナー -->
           <div id="nfcScanPrompt" class="alert alert-info d-flex align-items-center gap-2 py-2 mb-2">
             <i class="bi bi-credit-card-2-front fs-5 text-primary"></i>
-            <span class="small">学生証をNFCリーダーにかざすと自動入力されます</span>
+            <span class="small">{{ _('学生証をNFCリーダーにかざすと自動入力されます') }}</span>
           </div>
 
           <input type="text" id="student_id" name="student_id"
                  class="form-control mb-2"
-                 placeholder="学生ID（NFCまたは手入力）"
+                 placeholder="{{ _('学生ID（NFCまたは手入力）') }}"
                  value="{{ request.form.get('student_id', '') }}">
           <input type="text" id="student_name" name="student_name"
                  class="form-control"
-                 placeholder="氏名（任意）"
+                 placeholder="{{ _('氏名（任意）') }}"
                  value="{{ request.form.get('student_name', '') }}">
         </div>
       </div>
@@ -282,7 +285,7 @@
 
   <div class="confirm-area">
     <button type="submit" class="btn btn-warning btn-confirm text-dark">
-      <i class="bi bi-tag me-2"></i>登録・ラベル発行
+      <i class="bi bi-tag me-2"></i>{{ _('登録・ラベル発行') }}
     </button>
   </div>
 </form>
@@ -290,5 +293,15 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+  window.I18N = {
+    nfc_connected:       {{ _('NFC 接続中')       | tojson }},
+    nfc_disconnected:    {{ _('NFC 未接続')       | tojson }},
+    student_card_read:   {{ _('学生証を読み取りました') | tojson }},
+    nfc_prompt:          {{ _('学生証をNFCリーダーにかざすと自動入力されます') | tojson }},
+    status_storage:      {{ _('保管中')           | tojson }},
+    status_in_use:       {{ _('使用中')           | tojson }},
+  };
+</script>
 <script src="{{ url_for('static', filename='js/new_label.js') }}"></script>
 {% endblock %}

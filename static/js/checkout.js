@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const studentIdInput    = document.getElementById('student_id');
   const studentNameInput  = document.getElementById('student_name');
   const managementIdInput = document.getElementById('management_id');
@@ -31,14 +31,16 @@
   setPhase(studentIdInput?.value ? 'barcode' : 'student');
 
   // --- スキャナー状態 UI ---
+  const I18N = window.I18N || {};
+
   function updateReaderStatus(data) {
     if (nfcStatus) {
-      nfcStatus.textContent = data.nfc_connected ? '接続中' : '未接続';
+      nfcStatus.textContent = data.nfc_connected ? I18N.connected : I18N.disconnected;
       nfcStatus.className   = data.nfc_connected
         ? 'badge text-bg-success' : 'badge text-bg-secondary';
     }
     if (barcodeStatus) {
-      barcodeStatus.textContent = data.serial_connected ? '接続中' : '未接続';
+      barcodeStatus.textContent = data.serial_connected ? I18N.connected : I18N.disconnected;
       barcodeStatus.className   = data.serial_connected
         ? 'badge text-bg-success' : 'badge text-bg-secondary';
     }
@@ -51,14 +53,14 @@
     const detail     = document.getElementById('checkoutSuccessDetail');
     detail.innerHTML = `
       <div class="detail-row">
-        <span class="detail-label">機材</span>
+        <span class="detail-label">${I18N.equipment_label}</span>
         <span class="detail-value">${data.management_id} — ${data.item_name}</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">学生ID</span>
+        <span class="detail-label">${I18N.student_id_label}</span>
         <span class="detail-value">${data.student_id}</span>
       </div>
-      ${data.student_name ? `<div class="detail-row"><span class="detail-label">氏名</span><span class="detail-value">${data.student_name}</span></div>` : ''}
+      ${data.student_name ? `<div class="detail-row"><span class="detail-label">${I18N.student_name_label}</span><span class="detail-value">${data.student_name}</span></div>` : ''}
     `;
     successDiv.classList.remove('d-none');
   }
@@ -74,7 +76,7 @@
     document.getElementById('inUseMessage').textContent = resData.message;
     const name = resData.borrower_name
       ? `${resData.borrower_name}（${resData.borrower_id}）`
-      : resData.borrower_id || '不明';
+      : resData.borrower_id || (I18N.unknown || '不明');
     document.getElementById('inUseBorrower').textContent = name;
     inUseModal.show();
   }
@@ -83,7 +85,7 @@
   async function submitCheckout(url, payload) {
     if (confirmBtn) {
       confirmBtn.disabled    = true;
-      confirmBtn.innerHTML   = '<span class="spinner-border spinner-border-sm me-2"></span>処理中…';
+      confirmBtn.innerHTML   = `<span class="spinner-border spinner-border-sm me-2"></span>${I18N.processing}`;
     }
     try {
       const res  = await fetch(url, {
@@ -102,13 +104,13 @@
         showInUseModal(data);
         return;
       }
-      showErrorModal(data.error || 'エラーが発生しました。');
+      showErrorModal(data.error || I18N.error_occurred);
     } catch {
-      showErrorModal('サーバーとの通信に失敗しました。');
+      showErrorModal(I18N.server_comm_failed);
     } finally {
       if (confirmBtn) {
         confirmBtn.disabled  = false;
-        confirmBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>確認・登録';
+        confirmBtn.innerHTML = `<i class="bi bi-check-lg me-2"></i>${I18N.confirm_register}`;
       }
     }
   }
@@ -140,13 +142,13 @@
 
     evtSource.onopen = () => {
       if (sseStatus) {
-        sseStatus.textContent = 'サーバー接続済';
+        sseStatus.textContent = I18N.server_connected;
         sseStatus.className   = 'badge text-bg-success ms-auto';
       }
     };
     evtSource.onerror = () => {
       if (sseStatus) {
-        sseStatus.textContent = '再接続中...';
+        sseStatus.textContent = I18N.reconnecting;
         sseStatus.className   = 'badge text-bg-warning ms-auto';
       }
     };

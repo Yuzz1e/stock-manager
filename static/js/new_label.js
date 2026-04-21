@@ -89,15 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSupplyPreview();
   }
 
+  const I18N = window.I18N || {};
+
   // --- NFC ステータスバッジ更新 ---
   function updateNfcStatus(connected) {
     if (!nfcStatusBadge) return;
     if (connected) {
       nfcStatusBadge.className = 'badge text-bg-success ms-auto';
-      nfcStatusBadge.innerHTML = '<i class="bi bi-wifi me-1"></i>NFC 接続中';
+      nfcStatusBadge.innerHTML = `<i class="bi bi-wifi me-1"></i>${I18N.nfc_connected}`;
     } else {
       nfcStatusBadge.className = 'badge text-bg-secondary ms-auto';
-      nfcStatusBadge.innerHTML = '<i class="bi bi-wifi-off me-1"></i>NFC 未接続';
+      nfcStatusBadge.innerHTML = `<i class="bi bi-wifi-off me-1"></i>${I18N.nfc_disconnected}`;
     }
   }
 
@@ -105,10 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function flashNfcSuccess() {
     if (!nfcScanPrompt) return;
     nfcScanPrompt.className = 'alert alert-success d-flex align-items-center gap-2 py-2 mb-2';
-    nfcScanPrompt.innerHTML = '<i class="bi bi-check-circle-fill fs-5 text-success"></i><span class="small">学生証を読み取りました</span>';
+    nfcScanPrompt.innerHTML = `<i class="bi bi-check-circle-fill fs-5 text-success"></i><span class="small">${I18N.student_card_read}</span>`;
     setTimeout(() => {
       nfcScanPrompt.className = 'alert alert-info d-flex align-items-center gap-2 py-2 mb-2';
-      nfcScanPrompt.innerHTML = '<i class="bi bi-credit-card-2-front fs-5 text-primary"></i><span class="small">学生証をNFCリーダーにかざすと自動入力されます</span>';
+      nfcScanPrompt.innerHTML = `<i class="bi bi-credit-card-2-front fs-5 text-primary"></i><span class="small">${I18N.nfc_prompt}</span>`;
     }, 3000);
   }
 

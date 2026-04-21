@@ -1,0 +1,695 @@
+# English translations for Stock Manager.
+# Copyright (C) 2026 Stock Manager Contributors
+# This file is distributed under the same license as the Stock Manager
+# project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: stock-manager 1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-04-21 11:29+0900\n"
+"PO-Revision-Date: 2026-04-21 11:15+0900\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app.py:167 app.py:453 app.py:507
+msgid "学生IDと管理IDを入力してください。"
+msgstr "Please enter a student ID and a management ID."
+
+#: app.py:173 app.py:243 app.py:457 app.py:511
+#, python-format
+msgid "管理ID「%(mid)s」の機材が見つかりません。"
+msgstr "No equipment found for management ID \"%(mid)s\"."
+
+#: app.py:178 app.py:461 templates/checkout.html:192
+msgid "不明"
+msgstr "Unknown"
+
+#: app.py:181 app.py:464
+#, python-format
+msgid "この機材は現在「%(borrower)s」が使用中です。"
+msgstr "This equipment is currently in use by \"%(borrower)s\"."
+
+#: app.py:239
+msgid "管理IDと保管場所（棚または場所）を選択してください。"
+msgstr ""
+"Please enter a management ID and select a storage location (shelf or "
+"place)."
+
+#: app.py:250
+msgid "指定した棚が見つかりません。"
+msgstr "The specified shelf was not found."
+
+#: app.py:258
+msgid "指定した場所が見つかりません。"
+msgstr "The specified place was not found."
+
+#: app.py:282
+#, python-format
+msgid "返却先: %(loc)s"
+msgstr "Return location: %(loc)s"
+
+#: app.py:322
+msgid "カテゴリと物品名を入力してください。"
+msgstr "Please enter a category and item name."
+
+#: app.py:326
+msgid "カテゴリが見つかりません。"
+msgstr "Category not found."
+
+#: app.py:365
+#, python-format
+msgid "カテゴリ: %(name)s"
+msgstr "Category: %(name)s"
+
+#: app.py:367
+#, python-format
+msgid "用品ラベル: %(label)s"
+msgstr "Supply label: %(label)s"
+
+#: app.py:519
+msgid "強制変更"
+msgstr "Force-switched"
+
+#: app.py:526
+#, python-format
+msgid "使用者変更により強制返却 → %(sid)s"
+msgstr "Force-returned due to user change → %(sid)s"
+
+#: app.py:546
+msgid "使用者変更（強制チェックアウト）"
+msgstr "User change (forced checkout)"
+
+#: app.py:563
+msgid "管理IDが必要です。"
+msgstr "Management ID is required."
+
+#: app.py:567
+#, python-format
+msgid "管理ID「%(mid)s」が見つかりません。"
+msgstr "Management ID \"%(mid)s\" not found."
+
+#: app.py:586
+msgid "名前とプレフィックスが必要です。"
+msgstr "Name and prefix are required."
+
+#: app.py:588
+#, python-format
+msgid "プレフィックス「%(prefix)s」は既に使用されています。"
+msgstr "Prefix \"%(prefix)s\" is already in use."
+
+#: app.py:603
+#, python-format
+msgid "このカテゴリには %(n)d 件の機材が登録されているため削除できません。"
+msgstr "Cannot delete: %(n)d equipment items are registered under this category."
+
+#: app.py:617
+msgid "行番号・列番号・ラベルが必要です。"
+msgstr "Row number, column number, and label are required."
+
+#: app.py:632
+#, python-format
+msgid "この棚には %(n)d 件の機材が保管されているため削除できません。"
+msgstr "Cannot delete: %(n)d equipment items are stored on this shelf."
+
+#: app.py:644
+msgid "場所名が必要です。"
+msgstr "Place name is required."
+
+#: app.py:646
+#, python-format
+msgid "「%(name)s」は既に登録されています。"
+msgstr "\"%(name)s\" is already registered."
+
+#: templates/admin.html:2
+msgid "管理画面｜在庫管理"
+msgstr "Admin | Stock Manager"
+
+#: templates/admin.html:9 templates/new_label.html:250
+#: templates/return.html:129
+msgid "管理画面"
+msgstr "Admin"
+
+#: templates/admin.html:16
+msgid "貸出中"
+msgstr "Checked out"
+
+#: templates/admin.html:21
+msgid "操作履歴"
+msgstr "Activity log"
+
+#: templates/admin.html:26
+msgid "機材一覧"
+msgstr "Equipment"
+
+#: templates/admin.html:31 templates/new_label.html:225
+#: templates/return.html:100
+msgid "場所"
+msgstr "Place"
+
+#: templates/admin.html:36
+msgid "マスタ設定"
+msgstr "Master data"
+
+#: templates/admin.html:49 templates/admin.html:115 templates/admin.html:186
+#: templates/new_label.html:19
+msgid "管理ID"
+msgstr "Management ID"
+
+#: templates/admin.html:49 templates/admin.html:116 templates/admin.html:186
+#: templates/new_label.html:23 templates/new_label.html:122
+msgid "物品名"
+msgstr "Item name"
+
+#: templates/admin.html:49 templates/admin.html:117 templates/checkout.html:23
+#: templates/checkout.html:73 templates/checkout.html:187
+msgid "学生ID"
+msgstr "Student ID"
+
+#: templates/admin.html:49 templates/admin.html:118 templates/checkout.html:28
+#: templates/checkout.html:188
+msgid "氏名"
+msgstr "Name"
+
+#: templates/admin.html:49
+msgid "貸出日時"
+msgstr "Checked out at"
+
+#: templates/admin.html:68
+msgid "貸出中の機材はありません。"
+msgstr "No equipment is currently checked out."
+
+#: templates/admin.html:76
+msgid "スキャナー:"
+msgstr "Scanner:"
+
+#: templates/admin.html:77 templates/admin.html:336
+#: templates/new_label.html:263 templates/new_label.html:299
+msgid "NFC 未接続"
+msgstr "NFC disconnected"
+
+#: templates/admin.html:78 templates/admin.html:338
+msgid "バーコード 未接続"
+msgstr "Barcode disconnected"
+
+#: templates/admin.html:80
+msgid "学生証をかざすか、機材QRを読み取ると自動で絞り込みます"
+msgstr "Tap a student ID card or scan an equipment QR to auto-filter."
+
+#: templates/admin.html:89
+msgid "管理ID・物品名・学生ID…"
+msgstr "Management ID, item name, student ID…"
+
+#: templates/admin.html:95
+msgid "すべての操作"
+msgstr "All actions"
+
+#: templates/admin.html:96 templates/admin.html:130 templates/admin.html:341
+msgid "使用開始"
+msgstr "Checkout"
+
+#: templates/admin.html:97 templates/admin.html:132 templates/admin.html:342
+msgid "返却"
+msgstr "Return"
+
+#: templates/admin.html:98 templates/admin.html:134 templates/admin.html:343
+msgid "新規登録"
+msgstr "Register"
+
+#: templates/admin.html:101 templates/admin.html:174
+msgid "絞り込み"
+msgstr "Filter"
+
+#: templates/admin.html:104 templates/admin.html:177
+msgid "リセット"
+msgstr "Reset"
+
+#: templates/admin.html:113
+msgid "日時"
+msgstr "Timestamp"
+
+#: templates/admin.html:114
+msgid "操作"
+msgstr "Action"
+
+#: templates/admin.html:119
+msgid "詳細"
+msgstr "Details"
+
+#: templates/admin.html:136 templates/admin.html:344
+msgid "強制返却"
+msgstr "Force return"
+
+#: templates/admin.html:148
+msgid "操作履歴がありません。"
+msgstr "No activity logs yet."
+
+#: templates/admin.html:155
+msgid "さらに読み込む"
+msgstr "Load more"
+
+#: templates/admin.html:167
+msgid "管理ID・物品名・用品番号…"
+msgstr "Management ID, item name, supply code…"
+
+#: templates/admin.html:186 templates/new_label.html:95
+msgid "カテゴリ"
+msgstr "Category"
+
+#: templates/admin.html:186 templates/new_label.html:42
+#: templates/new_label.html:138
+msgid "用品ラベル"
+msgstr "Supply label"
+
+#: templates/admin.html:186 templates/new_label.html:27
+#: templates/new_label.html:190
+msgid "ステータス"
+msgstr "Status"
+
+#: templates/admin.html:186
+msgid "場所 / 使用者"
+msgstr "Location / User"
+
+#: templates/admin.html:186
+msgid "登録日"
+msgstr "Registered"
+
+#: templates/admin.html:227
+msgid "場所名（例: レンタルラボ）"
+msgstr "Place name (e.g. Rental Lab)"
+
+#: templates/admin.html:229 templates/admin.html:285 templates/admin.html:320
+msgid "追加"
+msgstr "Add"
+
+#: templates/admin.html:246
+msgid "場所が登録されていません。"
+msgstr "No places are registered."
+
+#: templates/admin.html:257
+msgid "カテゴリ管理"
+msgstr "Categories"
+
+#: templates/admin.html:261
+msgid "名前"
+msgstr "Name"
+
+#: templates/admin.html:261
+msgid "プレフィックス"
+msgstr "Prefix"
+
+#: templates/admin.html:261
+msgid "次の番号"
+msgstr "Next number"
+
+#: templates/admin.html:279
+msgid "カテゴリ追加"
+msgstr "Add category"
+
+#: templates/admin.html:283
+msgid "名前（例: カメラ）"
+msgstr "Name (e.g. Camera)"
+
+#: templates/admin.html:284
+msgid "プレフィックス（例: CAM）"
+msgstr "Prefix (e.g. CAM)"
+
+#: templates/admin.html:296
+msgid "棚マスタ"
+msgstr "Shelves"
+
+#: templates/admin.html:306
+msgid "削除"
+msgstr "Delete"
+
+#: templates/admin.html:313
+msgid "棚追加"
+msgstr "Add shelf"
+
+#: templates/admin.html:317
+msgid "行 (1=A)"
+msgstr "Row (1=A)"
+
+#: templates/admin.html:318
+msgid "列"
+msgstr "Column"
+
+#: templates/admin.html:319
+msgid "ラベル（例: A-1）"
+msgstr "Label (e.g. A-1)"
+
+#: templates/admin.html:335 templates/new_label.html:298
+msgid "NFC 接続中"
+msgstr "NFC connected"
+
+#: templates/admin.html:337
+msgid "バーコード 接続中"
+msgstr "Barcode connected"
+
+#: templates/admin.html:339
+#, python-brace-format
+msgid "学生証: {info}"
+msgstr "Student card: {info}"
+
+#: templates/admin.html:340
+#, python-brace-format
+msgid "機材スキャン: {mid}"
+msgstr "Equipment scan: {mid}"
+
+#: templates/admin.html:345
+msgid "該当する履歴がありません。"
+msgstr "No matching activity logs."
+
+#: templates/admin.html:346
+msgid "該当する機材がありません。"
+msgstr "No matching equipment."
+
+#: templates/admin.html:347
+msgid "件"
+msgstr "items"
+
+#: templates/admin.html:348 templates/checkout.html:190
+#: templates/new_label.html:197 templates/new_label.html:302
+#: templates/return.html:157
+msgid "保管中"
+msgstr "In storage"
+
+#: templates/admin.html:349 templates/checkout.html:191
+#: templates/new_label.html:205 templates/new_label.html:303
+#: templates/return.html:158
+msgid "使用中"
+msgstr "In use"
+
+#: templates/admin.html:350
+msgid "場所名を入力してください"
+msgstr "Please enter a place name."
+
+#: templates/admin.html:351
+#, python-brace-format
+msgid "「{name}」を削除してよいですか？"
+msgstr "Delete \"{name}\"?"
+
+#: templates/admin.html:352
+msgid "追加に失敗しました"
+msgstr "Failed to add."
+
+#: templates/admin.html:353
+msgid "削除に失敗しました"
+msgstr "Failed to delete."
+
+#: templates/admin.html:354
+msgid "名前とプレフィックスを入力してください"
+msgstr "Please enter a name and a prefix."
+
+#: templates/admin.html:355
+msgid "すべての項目を入力してください"
+msgstr "Please fill in all fields."
+
+#: templates/admin.html:356
+#, python-brace-format
+msgid "棚「{label}」を削除してよいですか？"
+msgstr "Delete shelf \"{label}\"?"
+
+#: templates/admin.html:357
+#, python-brace-format
+msgid "カテゴリ「{name}」を削除してよいですか？"
+msgstr "Delete category \"{name}\"?"
+
+#: templates/base.html:6 templates/base.html:16 templates/index.html:7
+msgid "在庫管理システム"
+msgstr "Stock Manager"
+
+#: templates/base.html:36
+msgid "管理"
+msgstr "Admin"
+
+#: templates/checkout.html:2
+msgid "使用登録｜在庫管理"
+msgstr "Checkout | Stock Manager"
+
+#: templates/checkout.html:9
+msgid "使用登録"
+msgstr "Checkout"
+
+#: templates/checkout.html:16 templates/checkout.html:45
+msgid "貸出登録完了"
+msgstr "Checkout complete"
+
+#: templates/checkout.html:19 templates/checkout.html:186
+#: templates/return.html:19
+msgid "機材"
+msgstr "Equipment"
+
+#: templates/checkout.html:34 templates/checkout.html:48
+#: templates/return.html:28
+msgid "続けて登録"
+msgstr "Register another"
+
+#: templates/checkout.html:35 templates/checkout.html:49
+#: templates/new_label.html:76 templates/return.html:29
+msgid "ホームへ"
+msgstr "Home"
+
+#: templates/checkout.html:55 templates/return.html:44
+msgid "スキャナー"
+msgstr "Scanner"
+
+#: templates/checkout.html:57 templates/return.html:46
+msgid "NFC"
+msgstr "NFC"
+
+#: templates/checkout.html:61 templates/checkout.html:101
+#: templates/return.html:50 templates/return.html:62
+msgid "バーコード"
+msgstr "Barcode"
+
+#: templates/checkout.html:64 templates/return.html:53
+msgid "接続待ち"
+msgstr "Waiting…"
+
+#: templates/checkout.html:73
+msgid "NFC / キーボード"
+msgstr "NFC / Keyboard"
+
+#: templates/checkout.html:78
+msgid "学生証をかざすか入力してください"
+msgstr "Tap your student card or type it in"
+
+#: templates/checkout.html:86 templates/new_label.html:279
+msgid "氏名（任意）"
+msgstr "Name (optional)"
+
+#: templates/checkout.html:89
+msgid "氏名（省略可）"
+msgstr "Name (optional)"
+
+#: templates/checkout.html:101 templates/return.html:62
+msgid "機材バーコード"
+msgstr "Equipment barcode"
+
+#: templates/checkout.html:106 templates/return.html:67
+msgid "バーコードをスキャンまたは入力"
+msgstr "Scan a barcode or type it in"
+
+#: templates/checkout.html:122 templates/checkout.html:183
+#: templates/return.html:142
+msgid "確認・登録"
+msgstr "Confirm & register"
+
+#: templates/checkout.html:133
+msgid "エラー"
+msgstr "Error"
+
+#: templates/checkout.html:140
+msgid "閉じる"
+msgstr "Close"
+
+#: templates/checkout.html:151
+msgid "使用中の機材"
+msgstr "Equipment in use"
+
+#: templates/checkout.html:157
+msgid "現在の使用者"
+msgstr "Current user"
+
+#: templates/checkout.html:163
+msgid "使用者を変更する"
+msgstr "Change user"
+
+#: templates/checkout.html:166
+msgid "キャンセル"
+msgstr "Cancel"
+
+#: templates/checkout.html:178 templates/return.html:152
+msgid "接続中"
+msgstr "Connected"
+
+#: templates/checkout.html:179 templates/return.html:153
+msgid "未接続"
+msgstr "Disconnected"
+
+#: templates/checkout.html:180 templates/return.html:154
+msgid "サーバー接続済"
+msgstr "Server connected"
+
+#: templates/checkout.html:181 templates/return.html:155
+msgid "再接続中..."
+msgstr "Reconnecting…"
+
+#: templates/checkout.html:182
+msgid "処理中…"
+msgstr "Processing…"
+
+#: templates/checkout.html:184
+msgid "エラーが発生しました。"
+msgstr "An error occurred."
+
+#: templates/checkout.html:185
+msgid "サーバーとの通信に失敗しました。"
+msgstr "Failed to communicate with the server."
+
+#: templates/checkout.html:189 templates/return.html:156
+msgid "使用者: "
+msgstr "User: "
+
+#: templates/index.html:2
+msgid "ホーム｜在庫管理"
+msgstr "Home | Stock Manager"
+
+#: templates/index.html:14
+msgid "使用"
+msgstr "Use"
+
+#: templates/index.html:15
+msgid "学生証 + 機材をスキャン"
+msgstr "Scan student card + equipment"
+
+#: templates/index.html:21 templates/return.html:10
+msgid "保管・返却"
+msgstr "Store / Return"
+
+#: templates/index.html:22
+msgid "機材をスキャンして棚へ"
+msgstr "Scan equipment and place on shelf"
+
+#: templates/index.html:28 templates/new_label.html:10
+msgid "新規ラベル発行"
+msgstr "Issue new label"
+
+#: templates/new_label.html:3
+msgid "新規ラベル発行｜在庫管理"
+msgstr "New Label | Stock Manager"
+
+#: templates/new_label.html:16
+msgid "機材登録完了"
+msgstr "Equipment registered"
+
+#: templates/new_label.html:36 templates/new_label.html:212
+#: templates/return.html:23 templates/return.html:85
+msgid "保管場所"
+msgstr "Storage location"
+
+#: templates/new_label.html:56
+msgid "テプラに印刷コマンドを送信しました。"
+msgstr "Print command sent to the Tepra printer."
+
+#: templates/new_label.html:62
+msgid "自動印刷できませんでした"
+msgstr "Automatic print failed"
+
+#: templates/new_label.html:69
+msgid "テプラ用CSV をダウンロード"
+msgstr "Download Tepra CSV"
+
+#: templates/new_label.html:75
+msgid "続けて発行"
+msgstr "Issue another"
+
+#: templates/new_label.html:111
+msgid "発行予定ID:"
+msgstr "Pending ID:"
+
+#: templates/new_label.html:125
+msgid "例: Canon EOS R6 Mark II"
+msgstr "e.g. Canon EOS R6 Mark II"
+
+#: templates/new_label.html:139
+msgid "任意"
+msgstr "Optional"
+
+#: templates/new_label.html:144
+msgid "用品ラベル（管理期間５年）"
+msgstr "Supply label (5-year term)"
+
+#: templates/new_label.html:145
+msgid "研究部"
+msgstr "Research Dept."
+
+#: templates/new_label.html:147 templates/new_label.html:161
+#: templates/new_label.html:169
+msgid "年度"
+msgstr "AY"
+
+#: templates/new_label.html:149
+msgid "学校法人　立命館"
+msgstr "Ritsumeikan Academy"
+
+#: templates/new_label.html:155
+msgid "この機材には用品ラベルがある"
+msgstr "This equipment has a supply label"
+
+#: templates/new_label.html:165
+msgid "例: 2022"
+msgstr "e.g. 2022"
+
+#: templates/new_label.html:173
+msgid "整理番号"
+msgstr "Supply code"
+
+#: templates/new_label.html:176
+msgid "例: H0196"
+msgstr "e.g. H0196"
+
+#: templates/new_label.html:218 templates/return.html:93
+msgid "棚"
+msgstr "Shelf"
+
+#: templates/new_label.html:251 templates/return.html:130
+#, python-format
+msgid "場所が登録されていません。%(link)sから追加してください。"
+msgstr "No places registered. Please add one from %(link)s."
+
+#: templates/new_label.html:261
+msgid "使用者情報"
+msgstr "User info"
+
+#: templates/new_label.html:270 templates/new_label.html:301
+msgid "学生証をNFCリーダーにかざすと自動入力されます"
+msgstr "Tap your student card on the NFC reader to auto-fill."
+
+#: templates/new_label.html:275
+msgid "学生ID（NFCまたは手入力）"
+msgstr "Student ID (NFC or manual)"
+
+#: templates/new_label.html:288
+msgid "登録・ラベル発行"
+msgstr "Register & print label"
+
+#: templates/new_label.html:300
+msgid "学生証を読み取りました"
+msgstr "Student card read."
+
+#: templates/return.html:3
+msgid "保管・返却｜在庫管理"
+msgstr "Return / Store | Stock Manager"
+
+#: templates/return.html:16
+msgid "返却・保管登録完了"
+msgstr "Return / storage recorded"
+

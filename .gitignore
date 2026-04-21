@@ -5,3 +5,4 @@ logs/
 stock.db
 __pycache__/
 old/
+messages.pot

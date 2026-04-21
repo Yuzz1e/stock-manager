@@ -1,4 +1,4 @@
-﻿import json
+import json
 import logging
 import os
 import queue
@@ -18,7 +18,8 @@ from datetime import datetime, timezone, timedelta
 JST = timezone(timedelta(hours=9))
 
 from dotenv import load_dotenv
-from flask import Flask, Response, jsonify, redirect, render_template, request, send_from_directory, stream_with_context, url_for
+from flask import Flask, Response, jsonify, redirect, render_template, request, send_from_directory, session, stream_with_context, url_for
+from flask_babel import Babel, gettext as _, lazy_gettext as _l
 from sqlalchemy import text
 
 from models import ActivityLog, Category, Equipment, Loan, Place, Shelf, db
@@ -44,6 +45,17 @@ SCANNER_SERIAL_PORT     = os.environ.get("SCANNER_SERIAL_PORT", "COM5")
 SCANNER_SERIAL_BAUDRATE = int(os.environ.get("SCANNER_SERIAL_BAUDRATE", "9600"))
 SCANNER_NFC_ENABLED     = os.environ.get("SCANNER_NFC_ENABLED", "true").lower() == "true"
 
+# i18n 設定
+SUPPORTED_LOCALES = ["ja", "en"]
+
+
+def get_locale():
+    """セッション優先 → Accept-Language → デフォルト(ja) の順でロケールを決定する"""
+    lang = session.get("lang")
+    if lang in SUPPORTED_LOCALES:
+        return lang
+    return request.accept_languages.best_match(SUPPORTED_LOCALES) or "ja"
+
 
 def build_shelf_grid(shelves):
     row_labels_set = {}
@@ -68,9 +80,17 @@ def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(BASE_DIR, 'stock.db')}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["BABEL_DEFAULT_LOCALE"] = "ja"
+    app.config["BABEL_SUPPORTED_LOCALES"] = SUPPORTED_LOCALES
+    app.config["BABEL_DEFAULT_TIMEZONE"] = "Asia/Tokyo"
+    app.config["BABEL_TRANSLATION_DIRECTORIES"] = os.path.join(BASE_DIR, "translations")
     app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 
     db.init_app(app)
+    Babel(app, locale_selector=get_locale)
+
+    # テンプレート内で現在のロケールを参照できるようにする
+    app.jinja_env.globals["get_locale"] = get_locale
 
     with app.app_context():
         db.create_all()
@@ -125,6 +145,15 @@ def index():
     return render_template("index.html")
 
 
+# ─── 言語切替 ────────────────────────────────────────────────────────────────
+
+@app.route("/i18n/<lang>")
+def set_language(lang):
+    if lang in SUPPORTED_LOCALES:
+        session["lang"] = lang
+    return redirect(request.referrer or url_for("index"))
+
+
 # ─── 使用（貸出）───────────────────────────────────────────────────────────────
 
 @app.route("/checkout", methods=["GET", "POST"])
@@ -135,18 +164,21 @@ def checkout():
         student_name  = request.form.get("student_name",  "").strip()
 
         if not student_id or not management_id:
-            return render_template("checkout.html", error="学生IDと管理IDを入力してください。")
+            return render_template("checkout.html", error=_("学生IDと管理IDを入力してください。"))
 
         equipment = Equipment.query.filter_by(management_id=management_id).first()
         if not equipment:
-            return render_template("checkout.html", error=f"管理ID「{management_id}」の機材が見つかりません。")
+            return render_template(
+                "checkout.html",
+                error=_("管理ID「%(mid)s」の機材が見つかりません。", mid=management_id),
+            )
 
         if equipment.status == "使用中":
             existing_loan = equipment.current_loan
-            borrower = existing_loan.student_id if existing_loan else "不明"
+            borrower = existing_loan.student_id if existing_loan else _("不明")
             return render_template(
                 "checkout.html",
-                error=f"この機材は現在「{borrower}」が使用中です。",
+                error=_("この機材は現在「%(borrower)s」が使用中です。", borrower=borrower),
             )
 
         loan = Loan(
@@ -204,18 +236,18 @@ def return_item():
         place_id      = request.form.get("place_id",      "").strip()
 
         if not management_id or (not shelf_id and not place_id):
-            return _render({"error": "管理IDと保管場所（棚または場所）を選択してください。"})
+            return _render({"error": _("管理IDと保管場所（棚または場所）を選択してください。")})
 
         equipment = Equipment.query.filter_by(management_id=management_id).first()
         if not equipment:
-            return _render({"error": f"管理ID「{management_id}」の機材が見つかりません。"})
+            return _render({"error": _("管理ID「%(mid)s」の機材が見つかりません。", mid=management_id)})
 
         location_label = None
 
         if shelf_id:
             shelf = Shelf.query.get(shelf_id)
             if not shelf:
-                return _render({"error": "指定した棚が見つかりません。"})
+                return _render({"error": _("指定した棚が見つかりません。")})
             equipment.storage_row = shelf.row_num
             equipment.storage_col = shelf.col_num
             equipment.place_id    = None
@@ -223,7 +255,7 @@ def return_item():
         else:
             place = Place.query.get(place_id)
             if not place:
-                return _render({"error": "指定した場所が見つかりません。"})
+                return _render({"error": _("指定した場所が見つかりません。")})
             equipment.storage_row = None
             equipment.storage_col = None
             equipment.place_id    = place.id
@@ -247,7 +279,7 @@ def return_item():
             item_name=equipment.item_name,
             student_id=returning_student_id,
             student_name=returning_student_name,
-            details=f"返却先: {location_label}",
+            details=_("返却先: %(loc)s", loc=location_label),
         ))
         db.session.commit()
 
@@ -287,11 +319,11 @@ def new_label():
         supply_code  = request.form.get("supply_code",   "").strip() or None
 
         if not category_id or not item_name:
-            return _render({"error": "カテゴリと物品名を入力してください。"})
+            return _render({"error": _("カテゴリと物品名を入力してください。")})
 
         category = Category.query.get(category_id)
         if not category:
-            return _render({"error": "カテゴリが見つかりません。"})
+            return _render({"error": _("カテゴリが見つかりません。")})
 
         management_id = f"{category.prefix}{category.next_number:03d}"
         category.next_number += 1
@@ -330,9 +362,9 @@ def new_label():
             )
             db.session.add(loan)
 
-        reg_details_parts = [f"カテゴリ: {category.name}"]
+        reg_details_parts = [_("カテゴリ: %(name)s", name=category.name)]
         if supply_year or supply_code:
-            reg_details_parts.append(f"用品ラベル: {equipment.supply_label}")
+            reg_details_parts.append(_("用品ラベル: %(label)s", label=equipment.supply_label))
         db.session.add(ActivityLog(
             action="register",
             management_id=management_id,
@@ -418,17 +450,18 @@ def api_checkout():
     student_name  = (data or {}).get("student_name",  "").strip()
 
     if not student_id or not management_id:
-        return jsonify({"error": "学生IDと管理IDを入力してください。"}), 400
+        return jsonify({"error": _("学生IDと管理IDを入力してください。")}), 400
 
     equipment = Equipment.query.filter_by(management_id=management_id).first()
     if not equipment:
-        return jsonify({"error": f"管理ID「{management_id}」の機材が見つかりません。"}), 404
+        return jsonify({"error": _("管理ID「%(mid)s」の機材が見つかりません。", mid=management_id)}), 404
 
     if equipment.status == "使用中":
         existing = equipment.current_loan
+        borrower = existing.student_id if existing else _("不明")
         return jsonify({
             "error":         "already_in_use",
-            "message":       f"この機材は現在「{existing.student_id if existing else '不明'}」が使用中です。",
+            "message":       _("この機材は現在「%(borrower)s」が使用中です。", borrower=borrower),
             "borrower_id":   existing.student_id   if existing else None,
             "borrower_name": existing.student_name if existing else None,
         }), 409
@@ -471,11 +504,11 @@ def api_checkout_force():
     student_name  = (data or {}).get("student_name",  "").strip()
 
     if not student_id or not management_id:
-        return jsonify({"error": "学生IDと管理IDを入力してください。"}), 400
+        return jsonify({"error": _("学生IDと管理IDを入力してください。")}), 400
 
     equipment = Equipment.query.filter_by(management_id=management_id).first()
     if not equipment:
-        return jsonify({"error": f"管理ID「{management_id}」の機材が見つかりません。"}), 404
+        return jsonify({"error": _("管理ID「%(mid)s」の機材が見つかりません。", mid=management_id)}), 404
 
     now = datetime.now(timezone.utc)
 
@@ -483,14 +516,14 @@ def api_checkout_force():
         existing = equipment.current_loan
         if existing:
             existing.returned_at     = now
-            existing.return_location = "強制変更"
+            existing.return_location = _("強制変更")
             db.session.add(ActivityLog(
                 action="force_return",
                 management_id=equipment.management_id,
                 item_name=equipment.item_name,
                 student_id=existing.student_id,
                 student_name=existing.student_name,
-                details=f"使用者変更により強制返却 → {student_id}",
+                details=_("使用者変更により強制返却 → %(sid)s", sid=student_id),
             ))
 
     loan = Loan(
@@ -510,7 +543,7 @@ def api_checkout_force():
         item_name=equipment.item_name,
         student_id=student_id,
         student_name=student_name or None,
-        details="使用者変更（強制チェックアウト）",
+        details=_("使用者変更（強制チェックアウト）"),
     ))
     db.session.commit()
     return jsonify({
@@ -527,11 +560,11 @@ def api_equipment_lookup():
     data          = request.get_json()
     management_id = (data or {}).get("management_id", "").strip()
     if not management_id:
-        return jsonify({"error": "管理IDが必要です。"}), 400
+        return jsonify({"error": _("管理IDが必要です。")}), 400
 
     equipment = Equipment.query.filter_by(management_id=management_id).first()
     if not equipment:
-        return jsonify({"error": f"管理ID「{management_id}」が見つかりません。"}), 404
+        return jsonify({"error": _("管理ID「%(mid)s」が見つかりません。", mid=management_id)}), 404
 
     return jsonify(equipment.to_dict())
 
@@ -550,9 +583,9 @@ def api_categories():
         name   = (data or {}).get("name",   "").strip()
         prefix = (data or {}).get("prefix", "").strip().upper()
         if not name or not prefix:
-            return jsonify({"error": "名前とプレフィックスが必要です。"}), 400
+            return jsonify({"error": _("名前とプレフィックスが必要です。")}), 400
         if Category.query.filter_by(prefix=prefix).first():
-            return jsonify({"error": f"プレフィックス「{prefix}」は既に使用されています。"}), 409
+            return jsonify({"error": _("プレフィックス「%(prefix)s」は既に使用されています。", prefix=prefix)}), 409
         category = Category(name=name, prefix=prefix)
         db.session.add(category)
         db.session.commit()
@@ -567,7 +600,7 @@ def api_category_delete(category_id):
     category = Category.query.get_or_404(category_id)
     in_use   = Equipment.query.filter_by(category_id=category_id).count()
     if in_use:
-        return jsonify({"error": f"このカテゴリには {in_use} 件の機材が登録されているため削除できません。"}), 409
+        return jsonify({"error": _("このカテゴリには %(n)d 件の機材が登録されているため削除できません。", n=in_use)}), 409
     db.session.delete(category)
     db.session.commit()
     return jsonify({"ok": True})
@@ -581,7 +614,7 @@ def api_shelves():
         col_num = (data or {}).get("col_num")
         label   = (data or {}).get("label", "").strip()
         if row_num is None or col_num is None or not label:
-            return jsonify({"error": "行番号・列番号・ラベルが必要です。"}), 400
+            return jsonify({"error": _("行番号・列番号・ラベルが必要です。")}), 400
         shelf = Shelf(row_num=row_num, col_num=col_num, label=label)
         db.session.add(shelf)
         db.session.commit()
@@ -596,7 +629,7 @@ def api_shelf_delete(shelf_id):
     shelf  = Shelf.query.get_or_404(shelf_id)
     in_use = Equipment.query.filter_by(storage_row=shelf.row_num, storage_col=shelf.col_num).count()
     if in_use:
-        return jsonify({"error": f"この棚には {in_use} 件の機材が保管されているため削除できません。"}), 409
+        return jsonify({"error": _("この棚には %(n)d 件の機材が保管されているため削除できません。", n=in_use)}), 409
     db.session.delete(shelf)
     db.session.commit()
     return jsonify({"ok": True})
@@ -608,9 +641,9 @@ def api_places():
         data = request.get_json()
         name = (data or {}).get("name", "").strip()
         if not name:
-            return jsonify({"error": "場所名が必要です。"}), 400
+            return jsonify({"error": _("場所名が必要です。")}), 400
         if Place.query.filter_by(name=name).first():
-            return jsonify({"error": f"「{name}」は既に登録されています。"}), 409
+            return jsonify({"error": _("「%(name)s」は既に登録されています。", name=name)}), 409
         place = Place(name=name)
         db.session.add(place)
         db.session.commit()
