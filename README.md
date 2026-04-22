@@ -73,3 +73,45 @@ stock-manager/
 デフォルトは A〜D 行 × 1〜5 列の 20 マスです。
 管理画面（/admin）の「マスタ設定」タブから追加できます。
 または `seed.py` の `rows`/`cols` を変更して `python seed.py` を再実行してください。
+
+## 多言語対応 (i18n)
+
+Flask-Babel により日本語（既定）と英語をサポートしています。
+ユーザーはナビゲーションバー右側の「言語」ドロップダウンから切り替えでき、
+選択はセッションに保存されます（`/i18n/ja`・`/i18n/en`）。
+
+### 翻訳カタログの更新手順
+
+テンプレートや Python コード内の翻訳対象文字列 (`_()`, `_l()`, `{{ _() }}`) を
+追加・変更したら以下を実行してカタログを更新します。
+
+```bash
+# 1. 抽出: 全翻訳対象を messages.pot に抽出
+pybabel extract -F babel.cfg -k _l -o messages.pot .
+
+# 2. 更新: 既存カタログへ反映（新規 msgid 追加・未使用 msgid を obsolete 化）
+pybabel update -i messages.pot -d translations
+
+# 3. 翻訳: translations/en/LC_MESSAGES/messages.po を編集して msgstr を埋める
+#    ja カタログは msgid が日本語のため空のままで OK（fallback で msgid が出る）
+
+# 4. コンパイル: .mo を生成（Flask-Babel は .mo をロードする）
+pybabel compile -d translations
+```
+
+新しい言語を追加する場合は次のように初期化します。
+
+```bash
+pybabel init -i messages.pot -d translations -l <locale>
+```
+
+加えて `app.py` の `SUPPORTED_LOCALES` と `templates/base.html` の言語
+ドロップダウンにロケールを追記してください。
+
+### JS 内の翻訳文字列
+
+静的 JS ファイル（`static/js/*.js`）や `admin.html` のインライン JS は
+テンプレートから `window.I18N` オブジェクト経由で翻訳文字列を受け取ります。
+プレースホルダーは `{var}` 形式で、`_fmt(tmpl, { var: value })` で展開します。
+JS 内に新しい翻訳対象が出たら、利用元のテンプレートの `<script>window.I18N = {...}`
+ブロックに `{{ _('...') | tojson }}` のエントリを追加してください。

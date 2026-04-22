@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const managementIdInput = document.getElementById('management_id');
   const stepBarcode       = document.getElementById('stepBarcode');
   const nfcStatus         = document.getElementById('nfcStatus');
@@ -9,14 +9,16 @@
   stepBarcode?.classList.add('scan-step--active-green');
 
   // --- スキャナー状態 UI 更新 ---
+  const I18N = window.I18N || {};
+
   function updateReaderStatus(data) {
     if (nfcStatus) {
-      nfcStatus.textContent = data.nfc_connected ? '接続中' : '未接続';
+      nfcStatus.textContent = data.nfc_connected ? I18N.connected : I18N.disconnected;
       nfcStatus.className   = data.nfc_connected
         ? 'badge text-bg-success' : 'badge text-bg-secondary';
     }
     if (barcodeStatus) {
-      barcodeStatus.textContent = data.serial_connected ? '接続中' : '未接続';
+      barcodeStatus.textContent = data.serial_connected ? I18N.connected : I18N.disconnected;
       barcodeStatus.className   = data.serial_connected
         ? 'badge text-bg-success' : 'badge text-bg-secondary';
     }
@@ -31,14 +33,14 @@
 
     evtSource.onopen = () => {
       if (sseStatus) {
-        sseStatus.textContent = 'サーバー接続済';
+        sseStatus.textContent = I18N.server_connected;
         sseStatus.className   = 'badge text-bg-success ms-auto';
       }
     };
 
     evtSource.onerror = () => {
       if (sseStatus) {
-        sseStatus.textContent = '再接続中...';
+        sseStatus.textContent = I18N.reconnecting;
         sseStatus.className   = 'badge text-bg-warning ms-auto';
       }
     };

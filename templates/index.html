@@ -1,31 +1,31 @@
-﻿{% extends "base.html" %}
-{% block title %}ホーム｜在庫管理{% endblock %}
+{% extends "base.html" %}
+{% block title %}{{ _('ホーム｜在庫管理') }}{% endblock %}
 
 {% block content %}
 <div class="home-wrapper d-flex flex-column align-items-center justify-content-center">
   <h1 class="home-title mb-5">
-    <i class="bi bi-box-seam me-2 text-primary"></i>在庫管理システム
+    <i class="bi bi-box-seam me-2 text-primary"></i>{{ _('在庫管理システム') }}
   </h1>
 
   <div class="home-btn-group">
     <!-- 使用 -->
     <a href="{{ url_for('checkout') }}" class="home-btn btn-checkout">
       <i class="bi bi-box-arrow-up-right"></i>
-      <span>使&nbsp;&nbsp;&nbsp;用</span>
-      <small>学生証 + 機材をスキャン</small>
+      <span>{{ _('使用') }}</span>
+      <small>{{ _('学生証 + 機材をスキャン') }}</small>
     </a>
 
     <!-- 保管・返却 -->
     <a href="{{ url_for('return_item') }}" class="home-btn btn-return">
       <i class="bi bi-box-arrow-in-down-left"></i>
-      <span>保管・返却</span>
-      <small>機材をスキャンして棚へ</small>
+      <span>{{ _('保管・返却') }}</span>
+      <small>{{ _('機材をスキャンして棚へ') }}</small>
     </a>
   </div>
 
   <!-- 新規ラベル発行 -->
   <a href="{{ url_for('new_label') }}" class="home-btn-sub mt-4">
-    <i class="bi bi-tag me-2"></i>新規ラベル発行
+    <i class="bi bi-tag me-2"></i>{{ _('新規ラベル発行') }}
   </a>
 </div>
 {% endblock %}

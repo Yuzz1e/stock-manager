@@ -1,32 +1,32 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% from "_shelf_grid.html" import shelf_table %}
-{% block title %}保管・返却｜在庫管理{% endblock %}
+{% block title %}{{ _('保管・返却｜在庫管理') }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm me-2">
     <i class="bi bi-arrow-left"></i>
   </a>
-  <h2 class="mb-0"><i class="bi bi-box-arrow-in-down-left me-2 text-success"></i>保管・返却</h2>
+  <h2 class="mb-0"><i class="bi bi-box-arrow-in-down-left me-2 text-success"></i>{{ _('保管・返却') }}</h2>
 </div>
 
 {% if success %}
 <div class="result-card success-card">
   <div class="result-icon"><i class="bi bi-check-circle-fill text-success"></i></div>
-  <h3 class="mt-3">返却・保管登録完了</h3>
+  <h3 class="mt-3">{{ _('返却・保管登録完了') }}</h3>
   <div class="result-detail mt-3">
     <div class="detail-row">
-      <span class="detail-label">機材</span>
+      <span class="detail-label">{{ _('機材') }}</span>
       <span class="detail-value">{{ equipment.management_id }} — {{ equipment.item_name }}</span>
     </div>
     <div class="detail-row">
-      <span class="detail-label">保管場所</span>
+      <span class="detail-label">{{ _('保管場所') }}</span>
       <span class="detail-value shelf-badge">{{ location_label }}</span>
     </div>
   </div>
   <div class="mt-4 d-flex gap-3 justify-content-center">
-    <a href="{{ url_for('return_item') }}" class="btn btn-success btn-lg px-5">続けて登録</a>
-    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-5">ホームへ</a>
+    <a href="{{ url_for('return_item') }}" class="btn btn-success btn-lg px-5">{{ _('続けて登録') }}</a>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-5">{{ _('ホームへ') }}</a>
   </div>
 </div>
 
@@ -41,16 +41,16 @@
 
 <!-- スキャナー状態バー -->
 <div class="serial-bar mb-3">
-  <span class="serial-label"><i class="bi bi-broadcast me-1"></i>スキャナー</span>
+  <span class="serial-label"><i class="bi bi-broadcast me-1"></i>{{ _('スキャナー') }}</span>
   <span class="ms-2 small">
-    <i class="bi bi-person-badge me-1 text-info"></i>NFC
+    <i class="bi bi-person-badge me-1 text-info"></i>{{ _('NFC') }}
     <span id="nfcStatus" class="badge text-bg-secondary">---</span>
   </span>
   <span class="ms-3 small">
-    <i class="bi bi-upc-scan me-1 text-warning"></i>バーコード
+    <i class="bi bi-upc-scan me-1 text-warning"></i>{{ _('バーコード') }}
     <span id="barcodeStatus" class="badge text-bg-secondary">---</span>
   </span>
-  <span id="sseStatus" class="badge text-bg-secondary ms-auto">接続待ち</span>
+  <span id="sseStatus" class="badge text-bg-secondary ms-auto">{{ _('接続待ち') }}</span>
 </div>
 
 <form method="post" id="returnForm">
@@ -59,12 +59,12 @@
     <div class="scan-step" id="stepBarcode">
       <div class="step-badge bg-success">1</div>
       <div class="scan-content">
-        <label class="scan-label">機材バーコード <span class="badge bg-warning text-dark ms-1">バーコード</span></label>
+        <label class="scan-label">{{ _('機材バーコード') }} <span class="badge bg-warning text-dark ms-1">{{ _('バーコード') }}</span></label>
         <div class="input-group input-group-lg">
           <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
           <input type="text" id="management_id" name="management_id"
                  class="form-control scan-input"
-                 placeholder="バーコードをスキャンまたは入力"
+                 placeholder="{{ _('バーコードをスキャンまたは入力') }}"
                  value="{{ request.form.get('management_id', '') }}"
                  autocomplete="off" required autofocus>
           <button type="button" class="btn btn-outline-secondary" onclick="clearField('management_id')">
@@ -82,7 +82,7 @@
     <div class="scan-step">
       <div class="step-badge bg-success">2</div>
       <div class="scan-content">
-        <label class="scan-label">保管場所</label>
+        <label class="scan-label">{{ _('保管場所') }}</label>
 
         <!-- タブ切り替え -->
         <ul class="nav nav-tabs location-tabs mb-3" id="locationTab">
@@ -90,14 +90,14 @@
             <button class="nav-link {% if not request.form.get('place_id') %}active{% endif %}"
                     type="button" data-bs-toggle="tab" data-bs-target="#tab-shelf"
                     id="tabShelfBtn">
-              <i class="bi bi-grid me-1"></i>棚
+              <i class="bi bi-grid me-1"></i>{{ _('棚') }}
             </button>
           </li>
           <li class="nav-item">
             <button class="nav-link {% if request.form.get('place_id') %}active{% endif %}"
                     type="button" data-bs-toggle="tab" data-bs-target="#tab-place"
                     id="tabPlaceBtn">
-              <i class="bi bi-geo-alt me-1"></i>場所
+              <i class="bi bi-geo-alt me-1"></i>{{ _('場所') }}
             </button>
           </li>
         </ul>
@@ -125,7 +125,10 @@
               {% endfor %}
             </div>
             {% else %}
-            <p class="text-muted small">場所が登録されていません。<a href="{{ url_for('admin') }}">管理画面</a>から追加してください。</p>
+            <p class="text-muted small">
+              {% set admin_link %}<a href="{{ url_for('admin') }}">{{ _('管理画面') }}</a>{% endset %}
+              {{ _('場所が登録されていません。%(link)sから追加してください。', link=admin_link) | safe }}
+            </p>
             {% endif %}
           </div>
         </div>
@@ -136,7 +139,7 @@
 
   <div class="confirm-area">
     <button type="submit" class="btn btn-success btn-confirm" id="confirmBtn">
-      <i class="bi bi-check-lg me-2"></i>確認・登録
+      <i class="bi bi-check-lg me-2"></i>{{ _('確認・登録') }}
     </button>
   </div>
 </form>
@@ -144,7 +147,17 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+  window.I18N = {
+    connected:           {{ _('接続中')           | tojson }},
+    disconnected:        {{ _('未接続')           | tojson }},
+    server_connected:    {{ _('サーバー接続済')   | tojson }},
+    reconnecting:        {{ _('再接続中...')      | tojson }},
+    user_label:          {{ _('使用者: ')         | tojson }},
+    status_storage:      {{ _('保管中')           | tojson }},
+    status_in_use:       {{ _('使用中')           | tojson }},
+  };
+</script>
 <script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
 <script src="{{ url_for('static', filename='js/return.js') }}"></script>
 {% endblock %}
-

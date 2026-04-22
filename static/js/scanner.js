@@ -1,4 +1,4 @@
-﻿/** フィールドをクリアしてフォーカスする */
+/** フィールドをクリアしてフォーカスする */
 function clearField(fieldId) {
   const el = document.getElementById(fieldId);
   if (el) {
@@ -27,15 +27,20 @@ async function fetchEquipmentPreview(managementId) {
     const data = await res.json();
 
     if (res.ok) {
+      const i18n = window.I18N || {};
       const statusClass = data.status === '保管中' ? 'text-bg-success' : 'text-bg-warning';
+      const statusLabel = data.status === '保管中'
+        ? (i18n.status_storage || data.status)
+        : (data.status === '使用中' ? (i18n.status_in_use || data.status) : data.status);
+      const userLabel = i18n.user_label || '使用者: ';
       preview.innerHTML = `
         <div class="preview-box">
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="badge ${statusClass}">${data.status}</span>
+            <span class="badge ${statusClass}">${statusLabel}</span>
             <strong>${data.management_id}</strong>
             <span>${data.item_name}</span>
             ${data.storage_label ? `<span class="shelf-badge">${data.storage_label}</span>` : ''}
-            ${data.current_borrower ? `<span class="text-muted small">使用者: ${data.current_borrower}</span>` : ''}
+            ${data.current_borrower ? `<span class="text-muted small">${userLabel}${data.current_borrower}</span>` : ''}
           </div>
         </div>`;
       preview.classList.remove('d-none');
